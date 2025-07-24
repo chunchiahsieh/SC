@@ -1,0 +1,213 @@
+﻿@{
+    ViewBag.Title = "工序與機台管理";
+}
+
+<h2>工序與機台管理</h2>
+
+<!-- Nav tabs -->
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="process-tab" data-bs-toggle="tab" data-bs-target="#process" type="button" role="tab" aria-controls="process" aria-selected="true">
+            工序
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="machine-tab" data-bs-toggle="tab" data-bs-target="#machine" type="button" role="tab" aria-controls="machine" aria-selected="false">
+            機台
+        </button>
+    </li>
+</ul>
+
+<!-- Tab panes -->
+<div class="tab-content mt-3" id="myTabContent">
+    <div class="tab-pane fade show active" id="process" role="tabpanel" aria-labelledby="process-tab">
+        <!-- Tab 表格上方的row -->
+        <div class="row mb-3 align-items-center">
+            <div class="col-auto">
+                <div class="input-group">
+                    <span class="input-group-text">工作中心</span>
+                    <select id="processFilter" class="form-select" onchange="getProcesses()">
+                        <option value=""></option>
+                        @foreach (var wc in ViewBag.WorkCenters)
+                        {
+                            <option value="@wc.Id">@wc.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addProcessModal">
+                    新增工序
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab 表格 -->
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>工序編號</th>
+                    <th>工序名稱</th>
+                    <th>使用機台類別</th>
+                    <th>對應標準工時</th>
+                    <th>報工方式</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="processTableBody">
+            </tbody>
+        </table>
+    </div>
+    <div class="tab-pane fade" id="machine" role="tabpanel" aria-labelledby="machine-tab">
+        <!-- Tab 表格上方的row -->
+        <div class="row mb-3 align-items-center">
+            <div class="col-auto">
+                <div class="input-group">
+                    <span class="input-group-text">工作中心</span>
+                    <select id="statusFilter" class="form-select" onchange="getMachines()">
+                        <option value=""></option>
+                        @foreach (var wc in ViewBag.WorkCenters)
+                        {
+                            <option value="@wc.Id">@wc.Name</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addMachineModal">
+                    新增機台
+                </button>
+
+            </div>
+        </div>
+
+        <!-- Tab 表格 -->
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>機台編號</th>
+                    <th>機台名稱-中文</th>
+                    <th>機台名稱-英文</th>
+                    <th>使用狀態</th>
+                    <th>機台類別</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="machineTableBody">
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+
+<!-- 工序 -->
+<div class="modal fade" id="addProcessModal" tabindex="-1" aria-labelledby="addProcessModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="addProcessModalContent">
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editProcessModal" tabindex="-1" aria-labelledby="editProcessModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="editProcessModalContent">
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteProcessModal" tabindex="-1" aria-labelledby="deleteProcessModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="deleteProcessModalContent">
+        </div>
+    </div>
+</div>
+
+
+
+<!-- 機台 -->
+<div class="modal fade" id="addMachineModal" tabindex="-1" aria-labelledby="addMachineModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="addMachineModalContent">
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="editMachineModal" tabindex="-1" aria-labelledby="editMachineModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="editMachineModalContent">
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteMachineModal" tabindex="-1" aria-labelledby="deleteMachineModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="deleteMachineModalContent">
+        </div>
+    </div>
+</div>
+
+<script src="/Scripts/jquery-3.7.0.min.js"></script>
+
+<script>
+    function getProcesses() {
+        var workCenterId = $('#processFilter').val();
+
+        $.get('/Process/GetProcessByWorkCenter', { workCenterId: workCenterId }, function (html) {
+            $('#processTableBody').html(html);
+        });
+    }
+    function getMachines() {
+        var workCenterId = $('#statusFilter').val();
+
+        $.get('/Machine/GetMachinesByWorkCenter', { workCenterId: workCenterId }, function (html) {
+            $('#machineTableBody').html(html);
+        });
+    }
+
+    $(document).ready(function () {
+        // 初始載入資料
+        getProcesses();
+        getMachines();
+
+        // 工序 Modals
+
+        $('#addProcessModal').on('show.bs.modal', function () {
+            $('#addProcessModalContent').load('/Process/Create');
+        });
+
+        var editProcessModalEl = document.getElementById('editProcessModal');
+        editProcessModalEl.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
+            $('#editProcessModalContent').load('/Process/Edit?id=' + id);
+        });
+
+        var deleteProcessModalEl = document.getElementById('deleteProcessModal');
+        deleteProcessModalEl.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
+            $('#deleteProcessModalContent').load('/Process/Delete?id=' + id);
+        });
+
+        // 機台 Modals
+
+        $('#addMachineModal').on('show.bs.modal', function () {
+            $('#addMachineModalContent').load('/Machine/Create');
+        });
+
+        var editMachineModalEl = document.getElementById('editMachineModal');
+        editMachineModalEl.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
+            $('#editMachineModalContent').load('/Machine/Edit?id=' + id);
+        });
+
+        var deleteMachineModalEl = document.getElementById('deleteMachineModal');
+        deleteMachineModalEl.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
+            $('#deleteMachineModalContent').load('/Machine/Delete?id=' + id);
+        });
+    });
+
+</script>

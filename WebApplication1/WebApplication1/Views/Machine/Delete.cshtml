@@ -1,0 +1,47 @@
+﻿@model WebApplication1.Models.Machine
+<div class="modal-header">
+    <h5 class="modal-title" id="deleteMachineModalLabel">刪除機台</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+</div>
+<form id="deleteMachineForm" method="post" action="/Machine/Delete">
+    <input type="hidden" name="Id" value="@Model.Id" />
+    <div class="modal-body">
+        <p>確定要刪除機台 <strong>@Model.MachineId</strong>（@Model.NameCN）嗎？此操作無法復原！</p>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+        <button type="submit" class="btn btn-danger">刪除</button>
+    </div>
+</form>
+
+<script>
+    $(document).ready(function () {
+        $('#deleteMachineForm').submit(function (e) {
+            e.preventDefault();
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function (res) {
+                    if (res.success) {
+                        var modalEl = document.getElementById('deleteMachineModal');
+                        var modal = bootstrap.Modal.getInstance(modalEl) || bootstrap.Modal.getOrCreateInstance(modalEl);
+                        modal.hide();
+
+                        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                        document.body.classList.remove('modal-open');
+                        document.body.style = '';
+
+                        getMachines();
+                    } else {
+                        alert(res.message || "刪除失敗");
+                    }
+                },
+                error: function () {
+                    alert("發生錯誤，請稍後再試");
+                }
+            });
+        });
+    });
+</script>

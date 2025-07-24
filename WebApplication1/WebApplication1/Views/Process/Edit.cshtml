@@ -1,0 +1,77 @@
+﻿@model WebApplication1.Models.Process
+<div class="modal-header">
+    <h5 class="modal-title" id="editProcessModalLabel">編輯工序</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+</div>
+<form id="editProcessForm" method="post" action="/Process/Edit">
+    <input type="hidden" name="Id" value="@Model.Id" />
+    <div class="modal-body">
+        <div class="mb-3">
+            <label for="workCenterSelect" class="form-label">工作中心</label>
+            <select id="workCenterSelect" name="WorkCenterId" class="form-select" required>
+                <option value="">請選擇工作中心</option>
+                @foreach (var wc in ViewBag.WorkCenters)
+                {
+                    <option value="@wc.Id" @(wc.Id == Model.WorkCenterId ? "selected" : "")>@wc.Name</option>
+                }
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="code" class="form-label">工序編號</label>
+            <input type="text" class="form-control" id="code" name="Code" required value="@Model.Code" />
+        </div>
+        <div class="mb-3">
+            <label for="name" class="form-label">工序名稱</label>
+            <input type="text" class="form-control" id="name" name="Name" value="@Model.Name" />
+        </div>
+        <div class="mb-3">
+            <label for="machineCategory" class="form-label">使用機台類別</label>
+            <input type="text" class="form-control" id="machineCategory" name="MachineCategory" value="@Model.MachineCategory" />
+        </div>
+        <div class="mb-3">
+            <label for="standardTime" class="form-label">對應標準工時</label>
+            <input type="text" class="form-control" id="standardTime" name="StandardTime" value="@Model.StandardTime" />
+        </div>
+        <div class="mb-3">
+            <label for="reportMethod" class="form-label">報工方式</label>
+            <input type="text" class="form-control" id="reportMethod" name="ReportMethod" value="@Model.ReportMethod" />
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+        <button type="submit" class="btn btn-primary">儲存</button>
+    </div>
+</form>
+
+<script>
+    $(document).ready(function () {
+        $('#editProcessForm').submit(function (e) {
+            e.preventDefault(); // 阻止表單傳統提交
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function (res) {
+                    if (res.success) {
+                        var modalEl = document.getElementById('editProcessModal');
+                        var modal = bootstrap.Modal.getInstance(modalEl) || bootstrap.Modal.getOrCreateInstance(modalEl);
+                        modal.hide();
+
+                        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                        document.body.classList.remove('modal-open');
+                        document.body.style = '';
+
+                        getProcesses();
+
+                    } else {
+                        alert(res.message || "更新失敗");
+                    }
+                },
+                error: function () {
+                    alert("發生錯誤，請稍後再試");
+                }
+            });
+        });
+    });
+</script>

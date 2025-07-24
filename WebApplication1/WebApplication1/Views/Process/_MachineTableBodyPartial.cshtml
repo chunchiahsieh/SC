@@ -1,0 +1,30 @@
+﻿@model List<WebApplication1.Models.Process>
+
+@if (Model != null && Model.Any())
+{
+    foreach (var process in Model)
+    {
+        <tr>
+            <td>@process.Code</td>
+            <td>@process.Name</td>
+            <td>@process.MachineCategory</td>
+            <td>@process.StandardTime</td>
+            <td>@process.ReportMethod</td>
+            <td>
+                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editProcessModal" data-id="@process.Id">
+                    編輯
+                </button>
+
+                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteProcessModal" data-id="@process.Id">
+                    刪除
+                </button>
+            </td>
+        </tr>
+    }
+}
+else
+{
+    <tr>
+        <td colspan="6">沒有資料</td>
+    </tr>
+}

@@ -1,0 +1,75 @@
+﻿@model WebApplication1.Models.Process
+<div class="modal-header">
+    <h5 class="modal-title" id="addProcessModalLabel">新增工序</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+</div>
+<form id="addProcessForm" method="post" action="/Process/Create">
+    <div class="modal-body">
+        <div class="mb-3">
+            <label for="workCenterSelect" class="form-label">工作中心</label>
+            <select id="workCenterSelect" name="WorkCenterId" class="form-select" required>
+                <option value="">請選擇工作中心</option>
+                @foreach (var wc in ViewBag.WorkCenters)
+                {
+                    <option value="@wc.Id">@wc.Name</option>
+                }
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="code" class="form-label">工序編號</label>
+            <input type="text" class="form-control" id="code" name="Code" required />
+        </div>
+        <div class="mb-3">
+            <label for="name" class="form-label">工序名稱</label>
+            <input type="text" class="form-control" id="name" name="Name" />
+        </div>
+        <div class="mb-3">
+            <label for="machineCategory" class="form-label">使用機台類別</label>
+            <input type="text" class="form-control" id="machineCategory" name="MachineCategory" />
+        </div>
+        <div class="mb-3">
+            <label for="standardTime" class="form-label">對應標準工時</label>
+            <input type="text" class="form-control" id="standardTime" name="StandardTime" />
+        </div>
+        <div class="mb-3">
+            <label for="reportMethod" class="form-label">報工方式</label>
+            <input type="text" class="form-control" id="reportMethod" name="ReportMethod" />
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+        <button type="submit" class="btn btn-primary">新增</button>
+    </div>
+</form>
+
+<script>
+    $(document).ready(function () {
+        $('#addProcessForm').submit(function (e) {
+            e.preventDefault();
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function (res) {
+                    if (res.success) {
+                        var modalEl = document.getElementById('addProcessModal');
+                        var modal = bootstrap.Modal.getInstance(modalEl) || bootstrap.Modal.getOrCreateInstance(modalEl);
+                        modal.hide();
+
+                        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                        document.body.classList.remove('modal-open');
+                        document.body.style = '';
+
+                        getProcesses(); // 載入最新工序列表
+                    } else {
+                        alert(res.message || "新增失敗");
+                    }
+                },
+                error: function () {
+                    alert("發生錯誤，請稍後再試");
+                }
+            });
+        });
+    });
+</script>

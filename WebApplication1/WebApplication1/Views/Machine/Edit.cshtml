@@ -1,0 +1,80 @@
+﻿@model WebApplication1.Models.Machine
+<div class="modal-header">
+    <h5 class="modal-title" id="editMachineModalLabel">編輯機台</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+</div>
+<form id="editMachineForm" method="post" action="/Machine/Edit">
+    <input type="hidden" name="Id" value="@Model.Id" />
+    <div class="modal-body">
+        <div class="mb-3">
+            <label for="workCenterSelect" class="form-label">工作中心</label>
+            <select id="workCenterSelect" name="WorkCenterId" class="form-select" required>
+                <option value="">請選擇工作中心</option>
+                @foreach (var wc in ViewBag.WorkCenters)
+                {
+                    <option value="@wc.Id" @(wc.Id == Model.WorkCenterId ? "selected" : "")>@wc.Name</option>
+                }
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="machineId" class="form-label">機台編號</label>
+            <input type="text" class="form-control" id="machineId" name="MachineId" required value="@Model.MachineId" />
+        </div>
+        <div class="mb-3">
+            <label for="nameCN" class="form-label">機台名稱-中文</label>
+            <input type="text" class="form-control" id="nameCN" name="NameCN" value="@Model.NameCN" />
+        </div>
+        <div class="mb-3">
+            <label for="nameEN" class="form-label">機台名稱-英文</label>
+            <input type="text" class="form-control" id="nameEN" name="NameEN" value="@Model.NameEN" />
+        </div>
+        <div class="mb-3">
+            <label for="status" class="form-label">使用狀態</label>
+            <select id="status" name="Status" class="form-select" required>
+                <option value="啟用" @(Model.Status == "啟用" ? "selected" : "")>啟用</option>
+                <option value="停用" @(Model.Status == "停用" ? "selected" : "")>停用</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="category" class="form-label">機台類別</label>
+            <input type="text" class="form-control" id="category" name="Category" value="@Model.Category" />
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+        <button type="submit" class="btn btn-primary">儲存</button>
+    </div>
+</form>
+
+<script>
+    $(document).ready(function () {
+        $('#editMachineForm').submit(function (e) {
+            e.preventDefault(); // 阻止表單傳統提交
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function (res) {
+                    if (res.success) {
+                        var modalEl = document.getElementById('editMachineModal');
+                        var modal = bootstrap.Modal.getInstance(modalEl) || bootstrap.Modal.getOrCreateInstance(modalEl);
+                        modal.hide();
+
+                        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                        document.body.classList.remove('modal-open');
+                        document.body.style = '';
+
+                        getMachines();
+
+                    } else {
+                        alert(res.message || "更新失敗");
+                    }
+                },
+                error: function () {
+                    alert("發生錯誤，請稍後再試");
+                }
+            });
+        });
+    });
+</script>

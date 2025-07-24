@@ -1,0 +1,39 @@
+﻿@model List<WebApplication1.Models.Machine>
+
+@if (Model != null && Model.Any())
+{
+    foreach (var machine in Model)
+    {
+        <tr>
+            <td>@machine.MachineId</td>
+            <td>@machine.NameCN</td>
+            <td>@machine.NameEN</td>
+            <td>
+                @if (machine.Status == "啟用")
+                {
+                    <span class="badge bg-success">啟用</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">停用</span>
+                }
+            </td>
+            <td>@machine.Category</td>
+            <td>
+                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editMachineModal" data-id="@machine.Id">
+                    編輯
+                </button>
+
+                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteMachineModal" data-id="@machine.Id">
+                    刪除
+                </button>
+            </td>
+        </tr>
+    }
+}
+else
+{
+    <tr>
+        <td colspan="6">沒有資料</td>
+    </tr>
+}
