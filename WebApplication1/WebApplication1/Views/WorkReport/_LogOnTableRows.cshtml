@@ -1,0 +1,32 @@
+﻿@model List<WebApplication1.Models.LogOn>
+
+@if (Model != null && Model.Any())
+{
+    foreach (var log in Model)
+    {
+        <tr>
+            <td><button class="btn btn-danger btn-sm" data-id="@log.Id">✘</button></td>
+            <td><button class="btn btn-success btn-sm" data-id="@log.Id">✎</button></td>
+            <td><button class="btn btn-primary btn-sm text-white" data-id="@log.Id">&#10003;</button></td>
+            <td>@log.MaterialNumber</td>
+            <td>@log.ProductionOrder</td>
+            <td>@log.Qty</td>
+            <td>@($"{log.StandardTime:0.00}")</td>
+            <td>@($"{log.ProductionTime:0.00}")</td>
+            <td>@log.WorkCenterName</td>
+            <td>@log.UserName</td>
+            <td>@log.ProcessName</td>
+            <td>
+                <button class="btn btn-sm text-white fw-bold shadow production-indicator" style="background: #ff6a00;">
+                    ▯
+                </button>
+            </td>
+        </tr>
+    }
+}
+else
+{
+    <tr>
+        <td colspan="12" class="text-center text-muted">目前沒有生產資料</td>
+    </tr>
+}

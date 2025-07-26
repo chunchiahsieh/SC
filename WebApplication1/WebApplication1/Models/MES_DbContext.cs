@@ -11,6 +11,7 @@ namespace WebApplication1.Models
         public MES_DbContext() : base("name=MES_DbContext") { }
         public DbSet<Machine> Machines { get; set; }
         public DbSet<Process> Processes { get; set; }
+        public DbSet<LogOn> LogOn { get; set; }
         
     }
 }

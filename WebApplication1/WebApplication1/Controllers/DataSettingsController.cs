@@ -18,7 +18,7 @@ namespace WebApplication1.Controllers
             try
             {
                 var workCenters = _erp.WorkCenters
-                    .OrderBy(w => w.Name)
+                    .OrderBy(w => w.Id)
                     .ToList();
 
                 var machines = _mes.Machines

@@ -14,12 +14,29 @@ namespace WebApplication1.Controllers
     public class ProcessController : Controller
     {
         private readonly ERP_DbContext _erp = new ERP_DbContext();
-        private readonly MES_DbContext db = new MES_DbContext();
+        private readonly MES_DbContext _mes = new MES_DbContext();
         // GET: Machine
+
+        public ActionResult Index(int? id)
+        {
+            if (id.HasValue)
+            {
+                var workCenter = _erp.WorkCenters.FirstOrDefault(w => w.Id == id.Value);
+                ViewBag.workCenter = workCenter;
+                ViewBag.Processes = _mes.Processes
+                       .Where(p => p.WorkCenterId == workCenter.Id)
+                       .OrderBy(p => p.Id)
+                       .ToList();
+            }
+            ViewBag.Machines = _mes.Machines.OrderBy(m => m.Id).ToList();
+           
+            // 你可以再查其他資料
+            return View();
+        }
 
         public ActionResult GetProcessByWorkCenter(int? workCenterId)
         {
-            var machines = db.Processes.AsQueryable();
+            var machines = _mes.Processes.AsQueryable();
 
             if (workCenterId.HasValue)
                 machines = machines.Where(m => m.WorkCenterId == workCenterId.Value);
@@ -30,7 +47,7 @@ namespace WebApplication1.Controllers
         // GET: Process/Create
         public ActionResult Create()
         {
-            ViewBag.WorkCenters = _erp.WorkCenters.OrderBy(w => w.Name).ToList();
+            ViewBag.WorkCenters = _erp.WorkCenters.OrderBy(w => w.Id).ToList();
             return PartialView();
         }
 
@@ -42,8 +59,8 @@ namespace WebApplication1.Controllers
             {
                 process.CreatedAt = DateTime.Now;
                 process.UpdatedAt = DateTime.Now;
-                db.Processes.Add(process);
-                db.SaveChanges();
+                _mes.Processes.Add(process);
+                _mes.SaveChanges();
                 return Json(new { success = true });
             }
 
@@ -56,11 +73,11 @@ namespace WebApplication1.Controllers
             if (id == null)
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
 
-            var process = db.Processes.Find(id);
+            var process = _mes.Processes.Find(id);
             if (process == null)
                 return HttpNotFound();
 
-            ViewBag.WorkCenters = _erp.WorkCenters.OrderBy(w => w.Name).ToList();
+            ViewBag.WorkCenters = _erp.WorkCenters.OrderBy(w => w.Id).ToList();
             return PartialView(process);
         }
 
@@ -70,7 +87,7 @@ namespace WebApplication1.Controllers
         {
             if (ModelState.IsValid)
             {
-                var existing = db.Processes.Find(process.Id);
+                var existing = _mes.Processes.Find(process.Id);
                 if (existing == null)
                 {
                     return HttpNotFound(); // 或 return Json(new { success = false, message = "資料不存在" });
@@ -84,7 +101,7 @@ namespace WebApplication1.Controllers
                 existing.ReportMethod = process.ReportMethod;
                 existing.UpdatedAt = DateTime.Now;
 
-                db.SaveChanges();
+                _mes.SaveChanges();
 
                 return Json(new { success = true });
             }
@@ -98,7 +115,7 @@ namespace WebApplication1.Controllers
             if (id == null)
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
 
-            var process = db.Processes.FirstOrDefault(p => p.Id == id);
+            var process = _mes.Processes.FirstOrDefault(p => p.Id == id);
             if (process == null)
                 return HttpNotFound();
 
@@ -109,11 +126,11 @@ namespace WebApplication1.Controllers
         [HttpPost, ActionName("Delete")]
         public ActionResult DeleteConfirmed(int id)
         {
-            var process = db.Processes.Find(id);
+            var process = _mes.Processes.Find(id);
             if (process != null)
             {
-                db.Processes.Remove(process);
-                db.SaveChanges();
+                _mes.Processes.Remove(process);
+                _mes.SaveChanges();
             }
             return Json(new { success = true });
         }

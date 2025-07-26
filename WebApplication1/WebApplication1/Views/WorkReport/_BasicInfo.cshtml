@@ -1,0 +1,68 @@
+﻿@model WebApplication1.DTOs.BasicInfo
+
+<input type="hidden" id="workCenterId" value="@Model.WorkCenters.Id" />
+<input type="hidden" id="processId" value="@Model.Process.Id" />
+<div class="card w-100 h-100 shadow rounded-3 border-0">
+    <div class="card-header bg-primary text-white text-center rounded-top-3 fw-bold fs-5">
+        基本資訊
+    </div>
+    <div class="card-body p-4">
+        <!-- 人員工號 -->
+        <div class="mb-3 row align-items-center">
+            <label for="userBarcode" class="col-sm-3 col-form-label fw-bold">人員工號</label>
+            <div class="col-sm-9 d-flex gap-2">
+                <input type="text" class="form-control" id="userBarcode" placeholder="請輸入人員工號" autocomplete="off" />
+                <div class="form-control-plaintext" id="userNameDisplay"></div>
+            </div>
+        </div>
+        <!-- 工作中心 -->
+        <div class="mb-3 row align-items-center">
+            <label class="col-sm-3 col-form-label fw-bold">工作中心</label>
+            <div class="col-sm-9 d-flex ">
+                <div class="form-control-plaintext text-primary fw-bold">@Model.WorkCenters.Name</div>
+            </div>
+        </div>
+        <!-- 工序 -->
+        <div class="mb-3 row align-items-center">
+            <label class="col-sm-3 col-form-label fw-bold">工序</label>
+            <div class="col-sm-9 d-flex gap-2">
+                <div class="form-control-plaintext text-primary fw-bold">@Model.Process.Code</div>
+                <div class="form-control-plaintext">@Model.Process.Name</div>
+            </div>
+        </div>
+        <!-- 機台 -->
+        <div class="mb-3 row align-items-center">
+            <label class="col-sm-3 col-form-label fw-bold">機台</label>
+            <div class="col-sm-9 d-flex gap-2">
+                <!-- 下拉選單 -->
+                <select id="machineSelect" class="form-select w-auto">
+                    <option value="" data-namecn=""></option>
+                    @foreach (var m in Model.Machines)
+                    {
+                        <option value="@m.Id" data-namecn="@m.NameCN">@m.Code</option>
+                    }
+                </select>
+                <!-- 顯示中文名稱 -->
+                <div id="machineName" class="form-control-plaintext ms-2"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        $('#userBarcode').on('change keyup', function (e) {
+            var barcode = $(this).val();
+            if (barcode.length > 0) {
+                $.get('/User/GetUserNameByBarcode', { barcode: barcode }, function (result) {
+                    if (result.success) {
+                        $('#userNameDisplay').removeClass('text-danger').text(result.name);
+                    } else {
+                        $('#userNameDisplay').addClass('text-danger').text('查無此人');
+                    }
+                });
+            } else {
+                $('#userNameDisplay').text('');
+            }
+        });
+    });
+</script>

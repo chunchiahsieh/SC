@@ -1,45 +1,234 @@
-﻿@{
-    ViewBag.Title = "";
+﻿@model WebApplication1.DTOs.WorkReportViewModel
+
+@{
+    ViewBag.Title = "報工";
+    var machines = ViewBag.Machines as List<WebApplication1.Models.Machine>;
+
 }
 
-<main>
-    <div class="container mt-5">
-        <div class="row">
-            <!-- 卡片1 -->
-            <div class="col-12 col-md-6 col-lg-4 mb-4">
-                <a href="/ManufacturingInfo" class="text-decoration-none">
-                    <div class="card h-100 shadow-sm cursor-pointer">
-                        <div class="card-body">
-                            <h5 class="card-title text-dark">製造情報</h5>
-                        </div>
-                    </div>
-                </a>
+
+<div class="container-fluid bg-white py-3 px-4 shadow-sm rounded-3 mt-3 mb-4 d-flex align-items-center justify-content-between">
+    <h2 class="mb-0 fw-bold text-primary">@ViewBag.Title</h2>
+    <a href="@Url.Action("Index", "WorkCenter")" class="btn btn-outline-primary px-4 fw-bold shadow-sm">回工作中心</a>
+</div>
+
+<main class="min-vh-100 d-flex flex-column" style="background: #f4f6fb;">
+    <!-- 上方區塊（75% 高度，含三欄） -->
+    <div class="container-fluid vh-75">
+        <div class="row h-100 g-3">
+            <!-- 左欄 -->
+            <div class="col-md-4 d-flex justify-content-center align-items-start">
+                @Html.Partial("_BasicInfo", Model.BasicInfo)
             </div>
 
-            <!-- 卡片2 -->
-            <div class="col-12 col-md-6 col-lg-4 mb-4">
-                <a href="/WorkReportController" class="text-decoration-none">
-                    <div class="card h-100 shadow-sm cursor-pointer">
-                        <div class="card-body">
-                            <h5 class="card-title text-dark">報工作業</h5>
-                        </div>
-                    </div>
-                </a>
+            <!-- 中欄 -->
+            <div class="col-md-4 d-flex justify-content-center align-items-start">
+                @Html.Partial("_WO", Model.WO)
             </div>
 
-            <!-- 卡片3 -->
-            <div class="col-12 col-md-6 col-lg-4 mb-4">
-                <a href="/DataSettingsController" class="text-decoration-none">
-                    <div class="card h-100 shadow-sm cursor-pointer">
-                        <div class="card-body">
-                            <h5 class="card-title text-dark">資料設定</h5>
+
+            <!-- 右欄 -->
+            <div class="col-md-4 d-flex justify-content-center align-items-start">
+                <div class="card w-100 h-100 shadow rounded-3 border-0">
+                    <div class="card-header bg-primary text-white text-center rounded-top-3 fw-bold fs-5">
+                        螢幕鍵盤
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row mb-3 align-items-center">
+                            <label for="inputBox" class="col-sm-4 col-form-label fw-bold">作業數量</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control fs-5 text-center" id="inputBox" placeholder="請輸入..." readonly>
+                            </div>
+                        </div>
+                        <div class="row g-2">
+                            @* 鍵盤按鈕 *@
+                            <div class="col-4"><button class="btn btn-outline-primary w-100 fs-4 py-2" onclick="appendValue('7')">7</button></div>
+                            <div class="col-4"><button class="btn btn-outline-primary w-100 fs-4 py-2" onclick="appendValue('8')">8</button></div>
+                            <div class="col-4"><button class="btn btn-outline-primary w-100 fs-4 py-2" onclick="appendValue('9')">9</button></div>
+                            <div class="col-4"><button class="btn btn-outline-primary w-100 fs-4 py-2" onclick="appendValue('4')">4</button></div>
+                            <div class="col-4"><button class="btn btn-outline-primary w-100 fs-4 py-2" onclick="appendValue('5')">5</button></div>
+                            <div class="col-4"><button class="btn btn-outline-primary w-100 fs-4 py-2" onclick="appendValue('6')">6</button></div>
+                            <div class="col-4"><button class="btn btn-outline-primary w-100 fs-4 py-2" onclick="appendValue('1')">1</button></div>
+                            <div class="col-4"><button class="btn btn-outline-primary w-100 fs-4 py-2" onclick="appendValue('2')">2</button></div>
+                            <div class="col-4"><button class="btn btn-outline-primary w-100 fs-4 py-2" onclick="appendValue('3')">3</button></div>
+                            <div class="col-4"><button class="btn btn-outline-primary w-100 fs-4 py-2" onclick="appendValue('0')">0</button></div>
+                            <div class="col-8"><button class="btn btn-warning w-100 fs-4 py-2 fw-bold" onclick="clearInput()">清除 Clean</button></div>
                         </div>
                     </div>
-                </a>
+                </div>
             </div>
+
+
         </div>
     </div>
 
-    <!-- Bootstrap JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- 操作按鈕區 -->
+    <div class="container-fluid bg-white py-3 px-3 rounded-3 shadow-sm my-3 sticky-top" style="top: 0; z-index: 9;">
+        <div class="d-flex justify-content-center gap-3">
+            <button class="btn btn-primary flex-grow-1 fw-bold px-2" id="btnStartLogOn">開始作業</button>
+            <button class="btn btn-secondary flex-grow-1 fw-bold px-2" disabled>工序退回</button>
+            <button class="btn btn-info flex-grow-1 fw-bold px-2" disabled>更新數量</button>
+            <button class="btn btn-outline-danger flex-grow-1 fw-bold px-2" disabled>取消修改</button>
+            <button class="btn btn-success flex-grow-1 fw-bold px-2" disabled>結束作業</button>
+        </div>
+    </div>
+
+    <!-- 生產中料號區 -->
+    <div class="container-fluid vh-25 overflow-auto">
+        <div class="fw-bold bg-primary text-white p-2 text-center rounded-top-3 fs-5">生產中料號</div>
+        <table class="table table-bordered text-center align-middle shadow-sm mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>取消</th>
+                    <th>修改</th>
+                    <th>完成</th>
+                    <th>料號</th>
+                    <th>製令</th>
+                    <th>作業數量</th>
+                    <th>標準工時</th>
+                    <th>生產時間</th>
+                    <th>作業站別</th>
+                    <th>作業人員</th>
+                    <th>工序步驟</th>
+                    <th>生產指示</th>
+                </tr>
+            </thead>
+            <tbody id="logOnTableBody">
+                @Html.Partial("_LogOnTableRows", Model.LogOns)
+            </tbody>
+        </table>
+    </div>
 </main>
+
+
+@section Scripts {
+    <script>
+
+        function getLogOns() {
+            var processId = $('#processId').val(); // 假設你有隱藏欄位存工序ID
+            $.get('/LogOn/GetLogOnList', { processId: processId }, function (html) {
+                $('#logOnTableBody').html(html);
+            });
+        }
+
+        function appendValue(val) {
+            document.getElementById('inputBox').value += val;
+            checkQuantity();
+        }
+        function clearInput() {
+            document.getElementById('inputBox').value = '';
+        }
+
+        // 呼叫後端 API 檢查數量
+        function checkQuantity() {
+            let qty = parseFloat($('#inputBox').val()) || 0;
+            let workOrderBarcode = $('#Barcode').val(); // 從工單條碼欄位取值
+
+            if (!workOrderBarcode || qty <= 0) {
+                return; // 沒有工單或數量時不檢查
+            }
+
+            $.get('@Url.Action("CheckQuantity", "LogOn")',
+                { workOrderBarcode: workOrderBarcode, qty: qty },
+                function (result) {
+                    if (result.success) {
+                        if (result.exceed) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: '數量超過！',
+                                html: `最大可作業數量為 <b>${result.max}</b>，<br>目前已登錄 <b>${result.current}</b>，<br>剩餘 <b>${result.remain}</b>`,
+                                confirmButtonText: '確定'
+                            });
+                        }
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: '錯誤',
+                            text: result.message
+                        });
+                    }
+                });
+        }
+
+
+      $(function () {
+         getLogOns();
+
+        // 當選擇首件時，Qty 自動變成 1；選擇正式生產則清空
+        $('input[name="ProductionStyle"]').on('change', function () {
+            $('#inputBox').val($(this).val() === 'firstPiece' ? 1 : '');
+        });
+
+        // 驗證函數
+          function validateModel(model) {
+              console.log(model);
+             if (!model.WorkCenterId) {
+                 Swal.fire({ icon: 'error', title: '錯誤', text: '當前工作中心錯誤' });
+                return false;
+            }
+              if (!model.ProcessId) {
+                Swal.fire({ icon: 'error', title: '錯誤', text: '當前工序錯誤' });
+                return false;
+            }
+            if (!model.UserWorkId) {
+                Swal.fire({ icon: 'error', title: '錯誤', text: '請輸入員工條碼' });
+                return false;
+            }
+
+              if (!model.MachineId) {
+                Swal.fire({ icon: 'error', title: '錯誤', text: '請選擇機台' });
+                return false;
+            }
+              if (!model.WorkOrderBarcode) {
+                Swal.fire({ icon: 'error', title: '錯誤', text: '請輸入工單條碼' });
+                return false;
+            }
+
+            if (!model.ProductionStyle) {
+                Swal.fire({ icon: 'error', title: '錯誤', text: '請選擇生產樣式（首件或正式生產）' });
+                return false;
+            }
+            if (model.Qty <= 0) {
+                Swal.fire({ icon: 'error', title: '錯誤', text: '請輸入作業數量' });
+                return false;
+            }
+            return true;
+        }
+
+        // 開始作業按鈕
+        $('#btnStartLogOn').on('click', function () {
+            var model = {
+                UserWorkId: $('#userBarcode').val().trim(),         // 人員工號
+                WorkCenterId: $('#workCenterId').val(),            // 從隱藏欄位取得
+                ProcessId: $('#processId').val(),                  // 從隱藏欄位取得
+                MachineId: $('#machineSelect').val(),
+                WorkOrderBarcode: $('#Barcode').val().trim(),
+                Qty: parseFloat($('#inputBox').val()) || 0,
+                ProductionStyle: $('input[name="ProductionStyle"]:checked').val()
+            };
+
+            if (!validateModel(model)) return;
+
+            // 發送 AJAX 請求
+            $.ajax({
+                url: '@Url.Action("StartLogOn", "LogOn")',
+                type: 'POST',
+                data: model,
+                success: function (res) {
+                    if (res.success) {
+                        Swal.fire({ icon: 'success', title: '成功', text: res.message });
+                        $('#inputBox').val('');
+                        getLogOns();
+                    } else {
+                        Swal.fire({ icon: 'warning', title: '警告', text: res.message });
+                    }
+                },
+                error: function () {
+                    Swal.fire({ icon: 'error', title: '錯誤', text: '伺服器錯誤，請稍後再試。' });
+                }
+            });
+        });
+    });
+
+    </script>
+}

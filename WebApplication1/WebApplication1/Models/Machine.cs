@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace WebApplication1.Models
 {
     public class Machine
     {
         public int Id { get; set; }        // 機台編號
-        public string MachineId { get; set; }        // 機台編號
+        public string Code { get; set; }        // 機台編號
         public string NameCN { get; set; }           // 機台名稱-中文
         public string NameEN { get; set; }           // 機台名稱-英文
         public string Status { get; set; }           // 使用狀態

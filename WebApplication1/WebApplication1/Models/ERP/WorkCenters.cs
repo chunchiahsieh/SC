@@ -8,7 +8,7 @@ namespace WebApplication1.Models.ERP
 
     public class WorkCenters
     {
-        public int Id { get; set; }        // 機台編號
-        public string Name { get; set; }        // 機台編號
+        public int Id { get; set; }        // 
+        public string Name { get; set; }        // 
     }
 }

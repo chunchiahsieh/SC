@@ -1,0 +1,82 @@
+﻿@model WebApplication1.Models.ERP.WO
+
+<div class="card w-100 h-100 shadow rounded-3 border-0">
+    <div class="card-header bg-primary text-white text-center rounded-top-3 fw-bold fs-5">
+        工單資訊
+    </div>
+    <div class="card-body p-4">
+        <!-- 工單條碼 -->
+        <div class="mb-3 row align-items-center">
+            <label for="Barcode" class="col-sm-3 col-form-label fw-bold">工單條碼</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="Barcode" placeholder="請輸入工單條碼" autocomplete="off" />
+            </div>
+        </div>
+        <!-- 製令 -->
+        <div class="mb-3 row align-items-center">
+            <label class="col-sm-3 col-form-label fw-bold">製令</label>
+            <div class="col-sm-9">
+                <div class="form-control-plaintext text-primary fw-bold" id="ProductionOrder">@Model.ProductionOrder</div>
+            </div>
+        </div>
+        <!-- 料號 -->
+        <div class="mb-3 row align-items-center">
+            <label class="col-sm-3 col-form-label fw-bold">料號</label>
+            <div class="col-sm-9">
+                <div class="form-control-plaintext" id="MaterialNumber">@Model.MaterialNumber</div>
+            </div>
+        </div>
+        <!-- 途程 -->
+        <div class="mb-3 row align-items-center">
+            <label class="col-sm-3 col-form-label fw-bold">途程</label>
+            <div class="col-sm-9">
+                <div class="form-control-plaintext" id="Route">@Model.Route</div>
+            </div>
+        </div>
+        <!-- 生產樣式（radio） -->
+        <div class="mb-3 row align-items-center">
+            <div class="col-sm-12 d-flex justify-content-center align-items-center gap-3">
+                <input class="form-check-input" id="radioFirstPiece" name="ProductionStyle" type="radio" value="firstPiece">
+                <label class="form-check-label fw-bold" for="radioFirstPiece">首件</label>
+
+                <input class="form-check-input" id="radioOfficialProduction" name="ProductionStyle" type="radio" value="officialProduction">
+                <label class="form-check-label fw-bold" for="radioOfficialProduction">正式生產</label>
+
+            </div>
+        </div>
+        <!-- 作業數量 -->
+        <div class="mb-3 row align-items-center">
+            <label class="col-sm-6 col-form-label fw-bold">最大可作業數量</label>
+            <div class="col-sm-6">
+                <div class="form-control-plaintext text-danger fw-bold" id="MaxQuantity">@Model.MaxQuantity</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(function () {
+    $('#Barcode').on('change keyup', function (e) {
+        var barcode = $(this).val().trim();
+
+        // 如果長度大於0就查詢
+        if (barcode.length > 0) {
+            $.get('@Url.Action("GetWOByBarcode", "WO")', { barcode: barcode }, function (result) {
+                if (result) {
+                    $("#ProductionOrder").text(result.ProductionOrder);
+                    $("#MaterialNumber").text(result.MaterialNumber);
+                    $("#Route").text(result.Route);
+                    $("#MaxQuantity").text(result.MaxQuantity);
+                } else {
+                    $("#ProductionOrder, #MaterialNumber, #Route, #MaxQuantity").text('');
+                    alert("找不到工單資料");
+                }
+            });
+        } else {
+            // 如果輸入清空，清空顯示欄位
+            $("#ProductionOrder, #MaterialNumber, #Route, #MaxQuantity").text('');
+        }
+    });
+    
+});
+</script>

@@ -1,8 +1,13 @@
-﻿@{
+﻿
+@{
     ViewBag.Title = "工序與機台管理";
+    var workCenters = ViewBag.WorkCenters as List<WebApplication1.Models.ERP.WorkCenters>;
 }
+<div class="container-fluid bg-white py-3 px-4 shadow-sm rounded-3 mt-3 mb-4 d-flex align-items-center justify-content-between">
+    <h2 class="mb-0 fw-bold text-primary">@ViewBag.Title</h2>
+    <a href="@Url.Action("Index", "Home")" class="btn btn-outline-primary px-4 fw-bold shadow-sm">回首頁</a>
+</div>
 
-<h2>工序與機台管理</h2>
 
 <!-- Nav tabs -->
 <ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -211,3 +216,6 @@
     });
 
 </script>
+<style>
+
+</style>

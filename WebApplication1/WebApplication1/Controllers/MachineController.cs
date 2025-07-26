@@ -26,7 +26,7 @@ namespace WebApplication1.Controllers
         }
         public ActionResult Create()
         {
-            ViewBag.WorkCenters = _erp.WorkCenters.OrderBy(w => w.Name).ToList();
+            ViewBag.WorkCenters = _erp.WorkCenters.OrderBy(w => w.Id).ToList();
             return PartialView();  // 預設會載入 Views/Machine/Create.cshtml 當 PartialView
         }
 
@@ -49,7 +49,7 @@ namespace WebApplication1.Controllers
             var machine = _mes.Machines.Find(id);
             if (machine == null) return HttpNotFound();
 
-            ViewBag.WorkCenters = _erp.WorkCenters.OrderBy(w => w.Name).ToList();
+            ViewBag.WorkCenters = _erp.WorkCenters.OrderBy(w => w.Id).ToList();
             return PartialView(machine); 
         }
         // .編輯 POST
@@ -63,7 +63,7 @@ namespace WebApplication1.Controllers
                 {
                     return Json(new { success = false, message = "找不到該機台資料。" });
                 }
-                existing.MachineId = model.MachineId;
+                existing.Code = model.Code;
                 existing.NameCN = model.NameCN;
                 existing.NameEN = model.NameEN;
                 existing.Status = model.Status;
@@ -83,7 +83,7 @@ namespace WebApplication1.Controllers
             var machine = _mes.Machines.Find(id);
             if (machine == null) return HttpNotFound();
 
-            ViewBag.WorkCenters = _erp.WorkCenters.OrderBy(w => w.Name).ToList();
+            ViewBag.WorkCenters = _erp.WorkCenters.OrderBy(w => w.Id).ToList();
             return PartialView(machine);
         }
         //  刪除 POST
