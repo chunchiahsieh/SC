@@ -138,6 +138,7 @@
     <Compile Include="Controllers\WOController.cs" />
     <Compile Include="Controllers\WorkCenterController.cs" />
     <Compile Include="Controllers\WorkReportController.cs" />
+    <Compile Include="DTOs\GetQCRequestDto.cs" />
     <Compile Include="DTOs\QCBasicInfo.cs" />
     <Compile Include="DTOs\BasicInfo.cs" />
     <Compile Include="DTOs\EditLogon.cs" />
@@ -149,6 +150,8 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\QCHistory.cs" />
+    <Compile Include="Models\QC.cs" />
     <Compile Include="Models\DefectReasons.cs" />
     <Compile Include="Models\ERP\ERP_DbContext.cs" />
     <Compile Include="Models\ERP\Instruction.cs" />
@@ -199,6 +202,7 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\JS\machine.js" />
+    <Content Include="Scripts\JS\QC.js" />
     <Content Include="Scripts\JS\_EditLogOnModal.js" />
     <Content Include="Scripts\JS\_LogOnTableRows.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
@@ -237,7 +241,7 @@
     <Content Include="Views\QC\Index.cshtml" />
     <Content Include="Views\QC\_BasicInfo.cshtml" />
     <Content Include="Views\QC\_QC.cshtml" />
-    <Content Include="Views\QC\_QCView.cshtml" />
+    <Content Include="Views\QC\QCViewMain.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

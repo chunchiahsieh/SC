@@ -2,15 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using WebApplication1.Models;
 
 namespace WebApplication1.DTOs
 {
-    public class QCViewModel
+    public class GetQCRequestDto
     {
         public int IndexId { get; set; }
-        public QCBasicInfo BasicInfo { get; set; }
-
-        public QCView QCView { get; set; }
+        public string UserBarcode { get; set; }
+        public string Barcode { get; set; }
     }
 }

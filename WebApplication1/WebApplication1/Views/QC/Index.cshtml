@@ -4,7 +4,7 @@
     ViewBag.Title = "IQC/IPQC 品質檢測系統";
     var machines = ViewBag.Machines as List<WebApplication1.Models.Machine>;
 }
-
+<input type="hidden" id="IndexId" value="@Model.IndexId" />
 <!-- 標題列 -->
 <div class="container-fluid bg-white py-3 px-4 shadow-sm rounded-3 mt-3 mb-4 d-flex align-items-center justify-content-between">
     <h2 class="mb-0 fw-bold text-primary">@ViewBag.Title</h2>
@@ -21,10 +21,387 @@
 
         <!-- 右側：檢測頁面（上下分區） -->
         <div class="col-md-7 d-flex flex-column">
-            @Html.Partial("_QC", Model.QCView)
+            @if (Model.QCView != null)
+            {
+                @Html.Partial("_QC", Model.QCView)
+            }
+            else
+            {
+                <div class="card w-100 h-100 shadow rounded-3 border-0">
+                    <div class="card-header text-white text-center rounded-top-3 fw-bold fs-5">
+                        <button id="btnStartInspection" type="button" class="btn btn-primary fw-bold fs-5">
+                            開始檢測
+                        </button>
+                    </div>
+
+                    <div class="card-body d-flex flex-column gap-4" id="QCView">
+                        <h5 class="fw-bold mb-3">尚未開始檢測</h5>
+                        <p class="mb-0">請先選擇作業人員、工單與機台，確認基本資料後再按下"開始檢測"。</p>
+                    </div>
+                </div>
+
+            }
         </div>
-
-
-
     </div>
+
+
+    <!-- Modal 視窗 -->
+    <div class="modal fade" id="instructionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">指示內容</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="instructionModalBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                    <button type="button" class="btn btn-primary" id="btnAcknowledge">標示為已讀</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 螢幕鍵盤輸入視窗 -->
+    <div class="modal fade" id="inputModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+
+                <!-- 🔹 Modal header（含 X 按鈕） -->
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">螢幕鍵盤</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="card w-100 h-100 shadow rounded-3 border-0">
+                        <div class="card-body p-4">
+                            <div class="row mb-3 align-items-center">
+                                <label id="inputLabel" for="inputBox" class="col-sm-4 col-form-label fw-bold">輸入內容</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control fs-5 text-center" id="inputBox" placeholder="請輸入..." readonly>
+                                </div>
+                            </div>
+                            <div class="row g-2">
+                                @for (int i = 1; i <= 9; i++)
+                                {
+                                    <div class="col-4">
+                                        <button class="btn btn-outline-primary w-100 fs-4 py-2" onclick="appendValue('@i')">@i</button>
+                                    </div>
+                                }
+                                <div class="col-4">
+                                    <button class="btn btn-outline-primary w-100 fs-4 py-2" onclick="appendValue('0')">0</button>
+                                </div>
+                                <div class="col-4">
+                                    <button class="btn btn-warning w-100 fs-4 py-2 fw-bold" onclick="clearInput()">清除</button>
+                                </div>
+                                <div class="col-4">
+                                    <button class="btn btn-success w-100 fs-4 py-2 fw-bold" onclick="confirmInput()">確認</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
 </main>
+
+<script>
+    
+
+
+    function reflash(qcId) {
+        console.log("reflash");
+        $.get('/QC/QCViewMain', { id: qcId }, function (html) {
+            $('#QCView').html(html); // 把內容重新載入
+            
+            updateNoteButtonStyle();
+        });
+    }
+
+    function updateNoteButtonStyle() {
+        $('.note-btn').each(function () {
+            const targetId = $(this).data('target');
+            const isRead = $('#' + targetId).val() === 'True';
+            $(this)
+                .removeClass('btn-outline-success btn-outline-danger')
+                .addClass(isRead ? 'btn-outline-success' : 'btn-outline-danger');
+        });
+    }
+   
+
+    function editDefectReasonQty(button) {
+        const $btn = $(button);
+        const reason = $btn.data('reason');
+        const currentQty = parseInt($btn.data('qty')) || 0;
+
+        openView(currentQty.toString(), function (newValue) {
+            const qty = parseInt(newValue);
+            if (!isNaN(qty)) {
+                $btn.data('qty', qty);
+                $btn
+                    .text(qty > 0 ? `${reason} × ${qty}` : reason)
+                    .removeClass("btn-outline-danger btn-danger")
+                    .addClass(qty > 0 ? "btn-danger" : "btn-outline-danger");
+            }
+        }, reason); // ⬅ 傳入不良原因作為顯示標籤
+    }
+
+    let inputCallback = null;
+    function openView(currentValue, callback, displayName = "輸入內容") {
+        $('#inputBox').val(currentValue || '');
+        $('#inputLabel').text(displayName); // 修改顯示名稱
+        inputCallback = callback;
+        $('#inputModal').modal('show');
+    }
+
+    function confirmInput() {
+        const value = $('#inputBox').val();
+        $('#inputModal').modal('hide');
+        if (typeof inputCallback === 'function') {
+            inputCallback(value);
+            inputCallback = null;
+        }
+    }
+
+    function appendValue(val) {
+        const input = $('#inputBox');
+        const current = input.val() || '';
+        const newRaw = current + val;
+
+        // 若是數字格式，移除前導零（但保留單一個 0）
+        const newClean = newRaw.replace(/^0+(?!$)/, '');
+        input.val(newClean);
+    }
+
+    function clearInput() {
+        $('#inputBox').val('');
+    }
+
+    function backspaceInput() {
+        $('#inputBox').val(function (i, old) {
+            return old.slice(0, -1);
+        });
+    }
+
+    $(function () {
+
+        $(document).on('click', '#btnStartInspection', async function () {
+            const indexId = $('#IndexId').val();
+            const userBarcode = $('#userBarcode').val();
+            const barcode = $('#Barcode').val();
+
+            try {
+                // 第一次 POST 呼叫
+                const response = await fetch('/QC/getQC', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        indexId,
+                        userBarcode,
+                        barcode
+                    })
+                });
+
+                // 檢查是否為 JSON
+                const contentType = response.headers.get('Content-Type') || '';
+                if (!response.ok || !contentType.includes('application/json')) {
+                    const errorText = await response.text(); // 可能是 HTML 錯誤頁
+                    throw new Error('後端回傳錯誤：' + errorText.slice(0, 100)); // 顯示前幾行即可
+                }
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: '資料異常',
+                        text: result.message || '資料不存在。',
+                        confirmButtonText: '關閉'
+                    });
+                    return;
+                }
+
+                // 第二次 GET 呼叫取得畫面
+                reflash(result.qcId);
+
+            } catch (err) {
+                Swal.fire({
+                    icon: 'error',
+                    title: '錯誤',
+                    html: `<div class="text-start">${err.message}</div>`,
+                    confirmButtonText: '關閉'
+                });
+            }
+        });
+
+        $(document).on('click', '.open-input-btn', function () {
+            const targetId = $(this).data('target');
+            const $input = $('#' + targetId);
+            const currentValue = $input.val();
+
+            openView(currentValue, function (newValue) {
+                if (newValue !== null && newValue.trim() !== "") {
+                    const parsed = parseInt(newValue);
+                    if (!isNaN(parsed)) {
+                        $input.val(parsed); // 顯示去除前導零的數字
+                    }
+                }
+            }, $(this).text().trim()); // 將按鈕文字顯示於 modal
+        });
+
+
+        // 初始載入時根據 hidden 欄位設定按鈕樣式
+        $('.note-btn').each(function () {
+            const targetId = $(this).data('target');
+            const isRead = $('#' + targetId).val() === 'True';
+            $(this)
+                .removeClass('btn-outline-success btn-outline-danger')
+                .addClass(isRead ? 'btn-outline-success' : 'btn-outline-danger');
+        });
+
+        // 改為動態綁定：支援之後 Ajax 載入的 .note-btn
+        $(document).on('click', '.note-btn', function () {
+            const targetId = $(this).data('target');
+            const apiUrl = $(this).data('api');
+            const $hidden = $('#' + targetId);
+            const isReaded = $hidden.val() === 'True';
+            const materialNumber = $(this).data('materialnumber'); 
+            const qcId = $(this).data('id');
+            const readapi = $(this).data('readapi')
+
+
+            console.log(' 點擊 note-btn：', { targetId, apiUrl, materialNumber, isReaded });
+
+            $.get(apiUrl, { materialNumber }, function (res) {
+                let html = '';
+
+                if (!res.success) {
+                    html = `<div class="text-danger">${res.message}</div>`;
+                } else if (res.data && res.data.length > 0) {
+                    html += `<h5>📘 指示內容</h5><ul>`;
+                    res.data.forEach(item => {
+                        html += `<li><strong>${item.Title}</strong>: ${item.Content}</li>`;
+                    });
+                    html += `</ul>`;
+                } else {
+                    html = '<div class="text-muted">沒有相關指示。</div>';
+                }
+
+                $('#instructionModalBody').html(html);
+                if (isReaded) {
+                    $('#btnAcknowledge').hide();
+                } else {
+                    $('#btnAcknowledge').show()
+                        .data('target-id', targetId)
+                        .data('qcId', qcId)
+                        .data('read-api', readapi) 
+                }
+                $('#instructionModal').modal('show');
+            }).fail(function () {
+                $('#instructionModalBody').html(`<div class="text-danger">無法載入資料。`);
+                $('#instructionModal').modal('show');
+            });
+        });
+
+        //標記已讀
+        $(document).on('click', '#btnAcknowledge', function () {
+            console.log("已點擊標示為已讀");
+            const readApi = $(this).data('read-api');
+            const targetId = $(this).data('target-id');
+            const qcId = $(this).data('qcId'); 
+            
+            if (!readApi || !targetId || !qcId) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '缺少參數',
+                    text: '無法完成操作，請重新整理頁面。'
+                });
+                return;
+            }
+
+            $.post(readApi, { id:qcId }, function (res) {
+                if (res.success) {
+                    // 標記為已讀樣式
+                    const $btn = $(`.note-btn[data-target="${targetId}"]`);
+                    $(`#${targetId}`).val('True');
+                    $btn.removeClass('btn-outline-danger').addClass('btn-outline-success');
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: '成功',
+                        text: '已標示為已讀'
+                    });
+                    reflash(qcId);
+
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: '錯誤',
+                        text: res.message || '無法完成操作'
+                    });
+                }
+                
+                $('#instructionModal').modal('hide');
+            }).fail(function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: '錯誤',
+                    text: '請求失敗，請稍後再試'
+                });
+            });
+        });
+
+        //狀態改變
+        $(document).on('click', '.qc-action-btn', async function () {
+            const action = $(this).data('action');
+            const qcId = $(this).data('id');
+
+            if (!qcId || !action) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '參數缺失',
+                    text: '缺少動作或 QC ID',
+                    confirmButtonText: '關閉'
+                });
+                return;
+            }
+
+            const statusMap = {
+                LogOn: "檢測中",
+                Pause: "已暫停",
+                Cancel: "已取消",
+                LogOff: "已完工"
+            };
+
+            try {
+                const res = await fetch(`/QC/${action}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: qcId })
+                });
+
+                if (!res.ok) throw new Error("呼叫失敗");
+
+                const result = await res.json();
+                if (!result.success) throw new Error(result.message || '伺服器回傳失敗');
+
+
+                reflash(qcId);
+            } catch (err) {
+                Swal.fire({
+                    icon: 'error',
+                    title: '操作失敗',
+                    text: err.message || '請稍後再試',
+                    confirmButtonText: '關閉'
+                });
+            }
+        });
+    });
+</script>
+<script src="~/Scripts/JS/QC.js"></script>

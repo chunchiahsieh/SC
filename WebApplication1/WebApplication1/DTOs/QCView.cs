@@ -7,6 +7,7 @@ namespace WebApplication1.DTOs
 {
     public class QCView
     {
+        public int Id { get; set; }
         public bool IsReadEngineeringInstruction { get; set; }        // 是否已讀工程指示
         public bool IsReadBusinessRequest { get; set; }               // 是否已讀業務需求
         public bool IsReadProductionNote { get; set; }                // 是否已讀生產指示
@@ -14,6 +15,7 @@ namespace WebApplication1.DTOs
         public int SamplingQty { get; set; }            // 抽檢數量
         public int DefectQty { get; set; }              // 不良數量
         
+        public string MaterialNumber { get; set; }
         public decimal? BoardThickness { get; set; }    // 板厚（單位 mm）
         public decimal? ViaCopper { get; set; }         // 孔銅（單位 μm）
         public decimal? SurfaceCopper { get; set; }     // 面銅（單位 μm）

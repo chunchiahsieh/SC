@@ -15,11 +15,29 @@ namespace WebApplication1.Models
         public DbSet<LogOn> LogOn { get; set; }
 
         public DbSet<LogOnHistory> LogOnHistories { get; set; }
+        public DbSet<DefectReasons> DefectReasons { get; set; }
+
+        public DbSet<QC> QC { get; set; }
+        public DbSet<QCHistory> QCHistory { get; set; }
+
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             // 移除 EF 預設複數命名慣例
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
+
+            modelBuilder.Entity<QCHistory>()
+              .ToTable("QCHistory")
+              .HasKey(h => h.Id);
+
+
+            modelBuilder.Entity<QC>()
+               .ToTable("QC")
+               .HasKey(h => h.Id);
+
+            modelBuilder.Entity<DefectReasons>()
+               .ToTable("DefectReasons")
+               .HasKey(h => h.Id);
 
             //LogOnHistory Fluent API 設定
             modelBuilder.Entity<LogOnHistory>()

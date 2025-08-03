@@ -22,12 +22,43 @@
     @Html.HiddenFor(m => m.IsReadProductionNote, new { id = "IsReadProductionNote" })
     <!-- 第一排：生產指示按鈕 -->
     <div class="d-flex justify-content-center gap-3">
-        <button type="button" class="btn btn-outline-danger note-btn" data-target="IsReadEngineeringInstruction">工程指示</button>
-        <button type="button" class="btn btn-outline-danger note-btn" data-target="IsReadBusinessRequest">業務需求</button>
-        <button type="button" class="btn btn-outline-danger note-btn" data-target="IsReadProductionNote">生產指示</button>
+        <!-- 業務需求按鈕 -->
+        <button type="button"
+                class="btn btn-outline-danger note-btn"
+                data-api="/Instruction/GetBusinessInstruction"
+                data-readapi="/QC/BusinessRead"
+                data-target="IsReadBusinessRequest"
+                data-id="@Model.Id"
+                data-materialnumber="@Model.MaterialNumber">
+            業務需求
+        </button>
+        <input type="hidden" id="IsReadBusinessRequest" value="@Model.IsReadBusinessRequest" />
+
+        <!-- 工程指示按鈕 -->
+        <button type="button"
+                class="btn btn-outline-danger note-btn"
+                data-api="/Instruction/GetEngineeringInstruction"
+                data-readapi="/QC/EngineeringRead"
+                data-target="IsReadEngineeringInstruction"
+                data-id="@Model.Id"
+                data-materialnumber="@Model.MaterialNumber">
+            工程指示
+        </button>
+        <input type="hidden" id="IsReadEngineeringInstruction" value="@Model.IsReadEngineeringInstruction" />
+
+        <!-- 生產指示按鈕 -->
+        <button type="button"
+                class="btn btn-outline-danger note-btn"
+                data-api="/Instruction/GetProductionInstruction"
+                data-readapi="/QC/ProductionRead"
+                data-target="IsReadProductionNote"
+                data-id="@Model.Id"
+                data-materialnumber="@Model.MaterialNumber">
+            生產指示
+        </button>
+        <input type="hidden" id="IsReadProductionNote" value="@Model.IsReadProductionNote" />
+
     </div>
-
-
 </div>
 
 <hr />
@@ -38,10 +69,10 @@
     <div class="d-flex flex-column gap-3">
         <!-- 第二排：開始 / 暫停 / 取消 / 完工 -->
         <div class="d-flex justify-content-center gap-3">
-            <button class="btn btn-success qc-action-btn" data-action="LogOn">開始</button>
-            <button class="btn btn-warning qc-action-btn" data-action="Pause">暫停</button>
-            <button class="btn btn-secondary qc-action-btn" data-action="Cancel">取消</button>
-            <button class="btn btn-danger qc-action-btn" data-action="LogOff">完工</button>
+            <button class="btn btn-success qc-action-btn" data-action="LogOn" data-id="@Model.Id">開始</button>
+            <button class="btn btn-warning qc-action-btn" data-action="Pause" data-id="@Model.Id">暫停</button>
+            <button class="btn btn-secondary qc-action-btn" data-action="Cancel" data-id="@Model.Id">取消</button>
+            <button class="btn btn-danger qc-action-btn" data-action="LogOff" data-id="@Model.Id">完工</button>
         </div>
 
         <!-- 檢測開始時間 -->
@@ -83,7 +114,7 @@
                 <div class="col-8">
                     <input type="text" id="defectQty" class="form-control text-end bg-light" value="0" readonly>
                 </div>
-                
+
             </div>
 
             <!-- 不良原因 -->
