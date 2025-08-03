@@ -1,0 +1,127 @@
+﻿@model WebApplication1.DTOs.QCBasicInfo
+
+<input type="hidden" id="workCenterId" value="@Model.WorkCenters.Id" />
+<input type="hidden" id="processId" value="@Model.Process.Id" />
+
+<div class="card w-100 h-100 shadow rounded-3 border-0">
+    <div class="card-header bg-primary text-white text-center rounded-top-3 fw-bold fs-5">
+        基本資訊
+    </div>
+    <div class="card-body p-4">
+        <!-- 🔹 人員工號 -->
+        <div class="mb-3 row align-items-center">
+            <div class="row align-items-center">
+                <label for="userBarcode" class="col-sm-4 col-form-label fw-bold">人員工號</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="userBarcode" placeholder="請輸入人員工號" autocomplete="off" />
+                    <div class="form-control-plaintext" id="userNameDisplay"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🔹 工作中心 -->
+        <div class="mb-3 row align-items-center">
+            <label class="col-sm-3 col-form-label fw-bold">工作中心</label>
+            <div class="col-sm-9">
+                <div class="form-control-plaintext text-primary fw-bold">@Model.WorkCenters.Name</div>
+            </div>
+        </div>
+
+        <!-- 🔹 工序 -->
+        <div class="mb-3 row align-items-center">
+            <label class="col-sm-3 col-form-label fw-bold">工序</label>
+            <div class="col-sm-9 d-flex gap-2">
+                <div class="form-control-plaintext text-primary fw-bold">@Model.Process.Code</div>
+                <div class="form-control-plaintext">@Model.Process.Name</div>
+            </div>
+        </div>
+
+        <!-- 🔹 工單條碼 -->
+        <div class="mb-3 row align-items-center">
+            <div class="row align-items-center">
+                <label for="Barcode" class="col-sm-4 col-form-label fw-bold">工單條碼</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="Barcode" placeholder="請輸入工單條碼" autocomplete="off" />
+                </div>
+            </div>
+        </div>
+
+
+        <!-- 🔹 製令 -->
+        <div class="mb-3 row align-items-center">
+            <label class="col-sm-3 col-form-label fw-bold">製令</label>
+            <div class="col-sm-9">
+                <div class="form-control-plaintext text-primary fw-bold" id="ProductionOrder">@Model.Wo.ProductionOrder</div>
+            </div>
+        </div>
+
+        <!-- 🔹 料號 -->
+        <div class="mb-3 row align-items-center">
+            <label class="col-sm-3 col-form-label fw-bold">料號</label>
+            <div class="col-sm-9">
+                <div class="form-control-plaintext" id="MaterialNumber">@Model.Wo.MaterialNumber</div>
+            </div>
+        </div>
+
+        <!-- 🔹 途程 -->
+        <div class="mb-3 row align-items-center">
+            <label class="col-sm-3 col-form-label fw-bold">途程</label>
+            <div class="col-sm-9">
+                <div class="form-control-plaintext" id="Route">@Model.Wo.Route</div>
+            </div>
+        </div>
+
+
+
+        <!-- 🔹 最大可作業數量 -->
+        <div class="mb-3 row align-items-center">
+            <label class="col-sm-6 col-form-label fw-bold">最大可作業數量</label>
+            <div class="col-sm-6">
+                <div class="form-control-plaintext text-danger fw-bold" id="MaxQuantity">@Model.Wo.MaxQuantity</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(function () {
+        $('#userBarcode').on('change keyup', function (e) {
+            var barcode = $(this).val();
+            if (barcode.length > 0) {
+                $.get('/User/GetUserNameByBarcode', { barcode: barcode }, function (result) {
+                    if (result.success) {
+                        $('#userNameDisplay').removeClass('text-danger').text(result.name);
+                    } else {
+                        $('#userNameDisplay').addClass('text-danger').text('查無此人');
+                    }
+                });
+            } else {
+                $('#userNameDisplay').text('');
+            }
+        });
+
+        $('#Barcode').on('change keyup', function (e) {
+        var barcode = $(this).val().trim();
+
+        // 如果長度大於0就查詢
+        if (barcode.length > 0) {
+            $.get('/WO/GetWOByBarcode', { barcode: barcode }, function (result) {
+                if (result) {
+                    $("#ProductionOrder").text(result.ProductionOrder);
+                    $("#MaterialNumber").text(result.MaterialNumber);
+                    $("#Route").text(result.Route);
+                    $("#MaxQuantity").text(result.MaxQuantity);
+                } else {
+                    $("#ProductionOrder, #MaterialNumber, #Route, #MaxQuantity").text('');
+                    alert("找不到工單資料");
+                }
+            });
+        } else {
+            // 如果輸入清空，清空顯示欄位
+            $("#ProductionOrder, #MaterialNumber, #Route, #MaxQuantity").text('');
+        }
+    });
+
+    });
+</script>

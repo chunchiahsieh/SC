@@ -11,8 +11,6 @@ namespace WebApplication1.DTOs
         public BasicInfo BasicInfo { get; set; }
         public Models.ERP.WO WO { get; set; } = new Models.ERP.WO();
         public List<Machine> Machines { get; set; }
-
-        // 新增這個屬性
         public List<LogOn> LogOns { get; set; } = new List<LogOn>();
     }
 }

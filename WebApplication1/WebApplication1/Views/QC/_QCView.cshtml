@@ -1,0 +1,159 @@
+﻿@model WebApplication1.DTOs.QCView
+
+@{
+    var statusDisplayMap = new Dictionary<string, string>
+{
+        { "LogOn", "檢測中" },
+        { "Pause", "已暫停" },
+        { "Cancel", "已取消" },
+        { "LogOff", "已完工" }
+    };
+
+    var displayStatus = statusDisplayMap.ContainsKey(Model.CurrentStatus)
+        ? statusDisplayMap[Model.CurrentStatus]
+        : "未知";
+}
+
+<!-- 🔹 上區塊：按鈕 -->
+<div class="d-flex flex-column gap-3">
+
+    @Html.HiddenFor(m => m.IsReadEngineeringInstruction, new { id = "IsReadEngineeringInstruction" })
+    @Html.HiddenFor(m => m.IsReadBusinessRequest, new { id = "IsReadBusinessRequest" })
+    @Html.HiddenFor(m => m.IsReadProductionNote, new { id = "IsReadProductionNote" })
+    <!-- 第一排：生產指示按鈕 -->
+    <div class="d-flex justify-content-center gap-3">
+        <button type="button" class="btn btn-outline-danger note-btn" data-target="IsReadEngineeringInstruction">工程指示</button>
+        <button type="button" class="btn btn-outline-danger note-btn" data-target="IsReadBusinessRequest">業務需求</button>
+        <button type="button" class="btn btn-outline-danger note-btn" data-target="IsReadProductionNote">生產指示</button>
+    </div>
+
+
+</div>
+
+<hr />
+
+@if (Model.IsReadEngineeringInstruction && Model.IsReadBusinessRequest && Model.IsReadProductionNote)
+{
+    <!-- 🔹 檢測控制區塊 + 檢測資料欄位（只有三個都已讀才會顯示） -->
+    <div class="d-flex flex-column gap-3">
+        <!-- 第二排：開始 / 暫停 / 取消 / 完工 -->
+        <div class="d-flex justify-content-center gap-3">
+            <button class="btn btn-success qc-action-btn" data-action="LogOn">開始</button>
+            <button class="btn btn-warning qc-action-btn" data-action="Pause">暫停</button>
+            <button class="btn btn-secondary qc-action-btn" data-action="Cancel">取消</button>
+            <button class="btn btn-danger qc-action-btn" data-action="LogOff">完工</button>
+        </div>
+
+        <!-- 檢測開始時間 -->
+        <div class="text-center">
+            <span class="fw-bold">檢測開始時間：</span>
+            <span id="startTime" class="text-primary">尚未開始</span>
+        </div>
+
+        <!-- 當前狀態 -->
+        <div class="text-center">
+            <span class="fw-bold">當前狀態：</span>
+            <span id="currentStatus" class="text-success">@displayStatus</span>
+        </div>
+        @Html.HiddenFor(m => m.CurrentStatus)
+    </div>
+
+    <hr />
+
+    bool isLogOn = Model.CurrentStatus == "LogOn";
+    if (isLogOn)
+    {
+        <!-- 🔹 下區塊：檢測資訊 -->
+        <div class="d-flex flex-column gap-3">
+            <!-- 抽檢數量 -->
+            <div class="row align-items-center">
+                <div class="col-4">
+                    <button type="button" class="btn btn-outline-dark w-100 fw-bold open-input-btn" data-target="samplingQty">抽檢數量</button>
+                </div>
+                <div class="col-8">
+                    <input type="text" id="samplingQty" class="form-control text-end bg-light" value="0" readonly>
+                </div>
+            </div>
+
+            <!-- 不良數量（含詳細按鈕） -->
+            <div class="row align-items-center mb-3">
+                <div class="col-4">
+                    <label for="defectQty" class="form-control-plaintext fw-bold text-center">不良數量</label>
+                </div>
+                <div class="col-8">
+                    <input type="text" id="defectQty" class="form-control text-end bg-light" value="0" readonly>
+                </div>
+                
+            </div>
+
+            <!-- 不良原因 -->
+            <div class="row mb-2 g-2">
+                @{
+                    var reasonOrder = new[] { "面銅不足", "阻抗不良", "膠渣殘留", "蝕刻不潔", "短路", "孔塞", "見底材" };
+
+                }
+                @foreach (var reasonName in reasonOrder)
+                {
+                    var item = Model.DefectReasons.FirstOrDefault(r => r.Name == reasonName);
+                    var qty = item?.Qty ?? 0;
+                    var btnText = qty > 0 ? $"{reasonName} × {qty}" : reasonName;
+                    var btnClass = qty > 0 ? "btn-danger" : "btn-outline-danger";
+                    <div class="col-6 col-md-4">
+                        <button type="button"
+                                class="btn @btnClass w-100 btn-sm reason-btn"
+                                data-reason="@reasonName"
+                                data-qty="@qty"
+                                onclick="editDefectReasonQty(this)">
+                            @btnText
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <!-- 板厚／孔銅／面銅 -->
+            <div class="row align-items-center mb-3">
+                <div class="col-4">
+                    <div class="row align-items-center">
+                        <div class="col-5">
+                            <button type="button" class="btn btn-outline-dark w-100 fw-bold open-input-btn" data-target="boardThickness">板厚</button>
+                        </div>
+                        <div class="col-7">
+                            <input type="number" step="0.01" class="form-control text-end bg-light" id="boardThickness" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <div class="row align-items-center">
+                        <div class="col-5">
+                            <button type="button" class="btn btn-outline-dark w-100 fw-bold open-input-btn" data-target="viaCopper">孔銅</button>
+                        </div>
+                        <div class="col-7">
+                            <input type="number" step="0.01" class="form-control text-end bg-light" id="viaCopper" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <div class="row align-items-center">
+                        <div class="col-5">
+                            <button type="button" class="btn btn-outline-dark w-100 fw-bold open-input-btn" data-target="surfaceCopper">面銅</button>
+                        </div>
+                        <div class="col-7">
+                            <input type="number" step="0.01" class="form-control text-end bg-light" id="surfaceCopper" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+
+}
+else
+{
+    <div class="alert alert-warning text-center fw-bold">
+        ⚠️ 請先閱讀完 <span class="text-danger">工程指示 / 業務需求 / 生產指示</span> 才能進行檢測操作。
+    </div>
+}
+

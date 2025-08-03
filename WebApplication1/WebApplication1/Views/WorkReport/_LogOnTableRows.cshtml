@@ -7,7 +7,7 @@
         <tr>
             <td><button class="btn btn-danger btn-sm" data-id="@log.Id">✘</button></td>
             <td><button class="btn btn-success btn-sm" data-id="@log.Id">✎</button></td>
-            <td><button class="btn btn-primary btn-sm text-white" data-id="@log.Id">&#10003;</button></td>
+            <td><button class="btn btn-primary btn-finish-logon btn-sm text-white" data-id="@log.Id">&#10003;</button></td>
             <td>@log.MaterialNumber</td>
             <td>@log.ProductionOrder</td>
             <td>@log.Qty</td>
@@ -17,7 +17,12 @@
             <td>@log.UserName</td>
             <td>@log.ProcessName</td>
             <td>
-                <button class="btn btn-sm text-white fw-bold shadow production-indicator" style="background: #ff6a00;">
+                <button class="btn btn-sm text-white fw-bold shadow production-indicator"
+                        style="background: #ff6a00;"
+                        data-id="@log.Id"
+                        data-material="@log.MaterialNumber"
+                        data-isreaded="@log.IsReaded.ToString().ToLower()"
+                        >
                     ▯
                 </button>
             </td>
@@ -30,3 +35,25 @@ else
         <td colspan="12" class="text-center text-muted">目前沒有生產資料</td>
     </tr>
 }
+
+
+<!-- Modal 視窗 -->
+<div class="modal fade" id="instructionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">指示內容</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="instructionModalBody">
+                <!-- 指示內容 -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                <button type="button" class="btn btn-primary" id="btnAcknowledge">標示為已讀</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+

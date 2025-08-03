@@ -14,8 +14,9 @@
         @for (int i = 0; i < Processes.Count; i++)
         {
             var wc = Processes[i];
+            var controllerName = (wc.Name == "IPQC" || wc.Name == "IQC") ? "QC" : "WorkReport";
             <div class="col d-flex">
-                <a href="@Url.Action("Index", "WorkReport", new { id = wc.Id })" class="text-decoration-none w-100">
+                <a href="@Url.Action("Index", controllerName, new { id = wc.Id })" class="text-decoration-none w-100">
                     <div class="workcenter-card flex-fill">
                         @wc.Name
                     </div>

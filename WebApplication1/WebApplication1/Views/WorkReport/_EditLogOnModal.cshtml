@@ -1,0 +1,103 @@
+﻿@model WebApplication1.DTOs.EditLogon
+
+<div class="modal fade" id="editLogOnModal" tabindex="-1" aria-labelledby="editLogOnModalLabel" aria-hidden="true">
+
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="editLogOnModalLabel">編輯作業資料</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <!-- 工單資訊 -->
+                    <div class="col-md-8">
+                        <div class="card w-100 h-100 shadow rounded-3 border-0">
+                            <div class="card-header bg-primary text-white text-center rounded-top-3 fw-bold fs-5">
+                                工單資訊
+                            </div>
+                            <div class="card-body p-4">
+                                <input type="hidden" id="editLogOnId" value="@Model.Id" />
+
+                                <div class="mb-3 row">
+                                    <label for="editBarcode" class="col-sm-3 col-form-label fw-bold">工單條碼</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" id="editBarcode" placeholder="請輸入工單條碼" autocomplete="off" value="@Model.wo.WorkOrderBarcode" readonly />
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-sm-3 col-form-label fw-bold">製令</label>
+                                    <div class="col-sm-9">
+                                        <div class="form-control-plaintext text-primary fw-bold">@Model.wo.ProductionOrder</div>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-sm-3 col-form-label fw-bold">料號</label>
+                                    <div class="col-sm-9">
+                                        <div class="form-control-plaintext">@Model.wo.MaterialNumber</div>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-sm-3 col-form-label fw-bold">途程</label>
+                                    <div class="col-sm-9">
+                                        <div class="form-control-plaintext">@Model.wo.Route</div>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row justify-content-center">
+                                    <div class="col-auto">
+                                        <input class="form-check-input" id="editRadioFirstPiece" name="ProductionStyle" type="radio" value="firstPiece" @(Model.logon.ProductionStyle == "firstPiece" ? "checked" : "")>
+                                        <label class="form-check-label fw-bold" for="editRadioFirstPiece">首件</label>
+                                    </div>
+                                    <div class="col-auto">
+                                        <input class="form-check-input" id="editRadioOfficial" name="ProductionStyle" type="radio" value="officialProduction" @(Model.logon.ProductionStyle == "officialProduction" ? "checked" : "")>
+                                        <label class="form-check-label fw-bold" for="editRadioOfficial">正式生產</label>
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label class="col-sm-6 col-form-label fw-bold">最大可作業數量</label>
+                                    <div class="col-sm-6">
+                                        <div class="form-control-plaintext text-danger fw-bold">@Model.wo.MaxQuantity</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 螢幕鍵盤 -->
+                    <div class="col-md-4">
+                        <div class="card w-100 h-100 shadow rounded-3 border-0">
+                            <div class="card-header bg-primary text-white text-center rounded-top-3 fw-bold fs-5">
+                                螢幕鍵盤
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="row mb-3">
+                                    <label for="editQty" class="col-sm-4 col-form-label fw-bold">作業數量</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control fs-5 text-center" id="editQty" value="@Model.logon.Qty.ToString("0")" readonly>
+                                    </div>
+                                </div>
+                                <div class="row g-2">
+                                    @for (int i = 1; i <= 9; i++)
+                                    {
+                                        <div class="col-4">
+                                            <button type="button" class="btn btn-outline-primary w-100 fs-4 py-2 append-key" data-val="@i">@i</button>
+                                        </div>
+                                    }
+                                    <div class="col-4">
+                                        <button type="button" class="btn btn-outline-primary w-100 fs-4 py-2 append-key" data-val="0">0</button>
+                                    </div>
+                                    <div class="col-8"><button type="button" class="btn btn-warning w-100 fs-4 py-2 fw-bold" id="btnClearQty">清除 Clean</button></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button class="btn btn-primary" id="btnSaveEditLogOn">儲存</button>
+            </div>
+        </div>
+    </div>
+
+</div>

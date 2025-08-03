@@ -1,0 +1,212 @@
+﻿@model WebApplication1.DTOs.QCView
+
+<div class="card w-100 h-100 shadow rounded-3 border-0">
+    <div class="card-header text-white text-center rounded-top-3 fw-bold fs-5">
+        <button id="btnStartInspection" type="button" class="btn btn-primary fw-bold fs-5">
+            開始檢測
+        </button>
+    </div>
+
+    <div class="card-body d-flex flex-column gap-4">
+        @Html.Partial("_QCView", Model)
+    </div>
+</div>
+
+<!-- Modal 視窗 -->
+<div class="modal fade" id="instructionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">指示內容</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="instructionModalBody"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                <button type="button" class="btn btn-primary" id="btnAcknowledge">標示為已讀</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 螢幕鍵盤輸入視窗 -->
+<div class="modal fade" id="inputModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <!-- 🔹 Modal header（含 X 按鈕） -->
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold">螢幕鍵盤</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="card w-100 h-100 shadow rounded-3 border-0">
+                    <div class="card-body p-4">
+                        <div class="row mb-3 align-items-center">
+                            <label id="inputLabel" for="inputBox" class="col-sm-4 col-form-label fw-bold">輸入內容</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control fs-5 text-center" id="inputBox" placeholder="請輸入..." readonly>
+                            </div>
+                        </div>
+                        <div class="row g-2">
+                            @for (int i = 1; i <= 9; i++)
+                            {
+                                <div class="col-4">
+                                    <button class="btn btn-outline-primary w-100 fs-4 py-2" onclick="appendValue('@i')">@i</button>
+                                </div>
+                            }
+                            <div class="col-4">
+                                <button class="btn btn-outline-primary w-100 fs-4 py-2" onclick="appendValue('0')">0</button>
+                            </div>
+                            <div class="col-4">
+                                <button class="btn btn-warning w-100 fs-4 py-2 fw-bold" onclick="clearInput()">清除</button>
+                            </div>
+                            <div class="col-4">
+                                <button class="btn btn-success w-100 fs-4 py-2 fw-bold" onclick="confirmInput()">確認</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+    let inputCallback = null;
+
+    function editDefectReasonQty(button) {
+        const $btn = $(button);
+        const reason = $btn.data('reason');
+        const currentQty = parseInt($btn.data('qty')) || 0;
+
+        openView(currentQty.toString(), function (newValue) {
+            const qty = parseInt(newValue);
+            if (!isNaN(qty)) {
+                $btn.data('qty', qty);
+                $btn
+                    .text(qty > 0 ? `${reason} × ${qty}` : reason)
+                    .removeClass("btn-outline-danger btn-danger")
+                    .addClass(qty > 0 ? "btn-danger" : "btn-outline-danger");
+            }
+        }, reason); // ⬅ 傳入不良原因作為顯示標籤
+    }
+
+
+    function openView(currentValue, callback, displayName = "輸入內容") {
+        $('#inputBox').val(currentValue || '');
+        $('#inputLabel').text(displayName); // 修改顯示名稱
+        inputCallback = callback;
+        $('#inputModal').modal('show');
+    }
+
+    function confirmInput() {
+        const value = $('#inputBox').val();
+        $('#inputModal').modal('hide');
+        if (typeof inputCallback === 'function') {
+            inputCallback(value);
+            inputCallback = null;
+        }
+    }
+
+    function appendValue(val) {
+        const input = $('#inputBox');
+        const current = input.val() || '';
+        const newRaw = current + val;
+
+        // 若是數字格式，移除前導零（但保留單一個 0）
+        const newClean = newRaw.replace(/^0+(?!$)/, '');
+        input.val(newClean);
+    }
+
+    function clearInput() {
+        $('#inputBox').val('');
+    }
+
+    function backspaceInput() {
+        $('#inputBox').val(function (i, old) {
+            return old.slice(0, -1);
+        });
+    }
+
+    $(function () {
+        $('.open-input-btn').on('click', function () {
+            const targetId = $(this).data('target');
+            const $input = $('#' + targetId);
+            const currentValue = $input.val();
+
+            openView(currentValue, function (newValue) {
+                if (newValue !== null && newValue.trim() !== "") {
+                    const parsed = parseInt(newValue);
+                    if (!isNaN(parsed)) {
+                        $input.val(parsed); // 顯示去除前導零的數字
+                    }
+                }
+            }, $(this).text().trim()); // 將按鈕文字顯示於 modal
+        });
+
+
+        $('.note-btn').each(function () {
+            var targetId = $(this).data('target');
+            var isRead = $('#' + targetId).val() === 'True';
+            $(this)
+                .removeClass('btn-outline-success btn-outline-danger')
+                .addClass(isRead ? 'btn-outline-success' : 'btn-outline-danger');
+        });
+
+        $('.note-btn').on('click', function () {
+            var targetId = $(this).data('target');
+            var $hidden = $('#' + targetId);
+            var currentValue = $hidden.val() === 'True';
+            $hidden.val(!currentValue);
+            $(this)
+                .removeClass('btn-outline-success btn-outline-danger')
+                .addClass(!currentValue ? 'btn-outline-success' : 'btn-outline-danger');
+
+            if ($('#IsReadEngineeringInstruction').val() === 'True' &&
+                $('#IsReadBusinessRequest').val() === 'True' &&
+                $('#IsReadProductionNote').val() === 'True') {
+                $('#qc-operation-area').show();
+            }
+        });
+
+        document.querySelectorAll(".qc-action-btn").forEach(btn => {
+            btn.addEventListener("click", async () => {
+                const action = btn.dataset.action;
+                const statusMap = {
+                    LogOn: "檢測中",
+                    Pause: "已暫停",
+                    Cancel: "已取消",
+                    LogOff: "已完工"
+                };
+                try {
+                    const res = await fetch(`/api/qc/${action}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({})
+                    });
+                    if (!res.ok) throw new Error("呼叫失敗");
+                    const newStatus = statusMap[action];
+                    document.getElementById("currentStatus").textContent = newStatus;
+                    document.getElementById("CurrentStatus").value = newStatus;
+                    Swal.fire({
+                        icon: 'success',
+                        title: '狀態已更新',
+                        text: `✅ 當前狀態：${newStatus}`,
+                        confirmButtonText: '確定'
+                    });
+                } catch (err) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: '操作失敗',
+                        text: err.message || '請稍後再試',
+                        confirmButtonText: '關閉'
+                    });
+                }
+            });
+        });
+    });
+</script>

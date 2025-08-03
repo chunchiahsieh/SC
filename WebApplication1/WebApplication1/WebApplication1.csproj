@@ -134,55 +134,28 @@
     <Compile Include="Controllers\ProcessController.cs" />
     <Compile Include="Controllers\MachineController.cs" />
     <Compile Include="Controllers\UserController.cs" />
+    <Compile Include="Controllers\QCController.cs" />
     <Compile Include="Controllers\WOController.cs" />
     <Compile Include="Controllers\WorkCenterController.cs" />
     <Compile Include="Controllers\WorkReportController.cs" />
+    <Compile Include="DTOs\QCBasicInfo.cs" />
     <Compile Include="DTOs\BasicInfo.cs" />
+    <Compile Include="DTOs\EditLogon.cs" />
+    <Compile Include="DTOs\QCView.cs" />
+    <Compile Include="DTOs\QCViewModel .cs" />
     <Compile Include="DTOs\WorkReportViewModel.cs" />
     <Compile Include="Enum\LogOnStatus.cs" />
+    <Compile Include="Enum\QCStatus.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202507252355538_Init.cs" />
-    <Compile Include="Migrations\202507252355538_Init.Designer.cs">
-      <DependentUpon>202507252355538_Init.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\Configuration.cs" />
-    <Compile Include="Migrations\ERP\202507241138144_InitialCreate.cs" />
-    <Compile Include="Migrations\ERP\202507241138144_InitialCreate.Designer.cs">
-      <DependentUpon>202507241138144_InitialCreate.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\ERP\202507252358109_AddUserTable.cs" />
-    <Compile Include="Migrations\ERP\202507252358109_AddUserTable.Designer.cs">
-      <DependentUpon>202507252358109_AddUserTable.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\ERP\202507260025206_AddIdToWO.cs" />
-    <Compile Include="Migrations\ERP\202507260025206_AddIdToWO.Designer.cs">
-      <DependentUpon>202507260025206_AddIdToWO.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\ERP\202507260201588_AddSomethingToERP.cs" />
-    <Compile Include="Migrations\ERP\202507260201588_AddSomethingToERP.Designer.cs">
-      <DependentUpon>202507260201588_AddSomethingToERP.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\ERP\Configuration.cs" />
-    <Compile Include="Migrations\MES\202507260226055_InitMES.cs" />
-    <Compile Include="Migrations\MES\202507260226055_InitMES.Designer.cs">
-      <DependentUpon>202507260226055_InitMES.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\MES\202507260329139_InitMES1.cs" />
-    <Compile Include="Migrations\MES\202507260329139_InitMES1.Designer.cs">
-      <DependentUpon>202507260329139_InitMES1.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\MES\202507260359108_InitMES2.cs" />
-    <Compile Include="Migrations\MES\202507260359108_InitMES2.Designer.cs">
-      <DependentUpon>202507260359108_InitMES2.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\MES\Configuration.cs" />
+    <Compile Include="Models\DefectReasons.cs" />
     <Compile Include="Models\ERP\ERP_DbContext.cs" />
     <Compile Include="Models\ERP\Instruction.cs" />
     <Compile Include="Models\ERP\User.cs" />
     <Compile Include="Models\ERP\WO.cs" />
     <Compile Include="Models\LogOn.cs" />
+    <Compile Include="Models\LogOnHistory.cs" />
     <Compile Include="Models\Process.cs" />
     <Compile Include="Models\ERP\WorkCenters.cs" />
     <Compile Include="Models\Machine.cs" />
@@ -226,6 +199,8 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\JS\machine.js" />
+    <Content Include="Scripts\JS\_EditLogOnModal.js" />
+    <Content Include="Scripts\JS\_LogOnTableRows.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
@@ -257,13 +232,16 @@
     <Content Include="Views\WorkReport\_BasicInfo.cshtml" />
     <Content Include="Views\WorkReport\_WO.cshtml" />
     <Content Include="Views\WorkReport\_LogOnTableRows.cshtml" />
-    <Content Include="Views\WorkReport\_MachineTableRow.cshtml" />
+    <Content Include="Views\Instruction\_InstructionList.cshtml" />
+    <Content Include="Views\WorkReport\_EditLogOnModal.cshtml" />
+    <Content Include="Views\QC\Index.cshtml" />
+    <Content Include="Views\QC\_BasicInfo.cshtml" />
+    <Content Include="Views\QC\_QC.cshtml" />
+    <Content Include="Views\QC\_QCView.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Views\Instruction\" />
     <Folder Include="Views\LogOn\" />
-    <Folder Include="Views\QC\" />
     <Folder Include="Views\User\" />
     <Folder Include="Views\WO\" />
   </ItemGroup>
@@ -293,32 +271,6 @@
     <Content Include="Scripts\bootstrap.bundle.js.map" />
     <Content Include="Scripts\jquery-3.7.0.slim.min.map" />
     <Content Include="Scripts\jquery-3.7.0.min.map" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Migrations\202507252355538_Init.resx">
-      <DependentUpon>202507252355538_Init.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\ERP\202507241138144_InitialCreate.resx">
-      <DependentUpon>202507241138144_InitialCreate.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\ERP\202507252358109_AddUserTable.resx">
-      <DependentUpon>202507252358109_AddUserTable.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\ERP\202507260025206_AddIdToWO.resx">
-      <DependentUpon>202507260025206_AddIdToWO.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\ERP\202507260201588_AddSomethingToERP.resx">
-      <DependentUpon>202507260201588_AddSomethingToERP.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\MES\202507260226055_InitMES.resx">
-      <DependentUpon>202507260226055_InitMES.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\MES\202507260329139_InitMES1.resx">
-      <DependentUpon>202507260329139_InitMES1.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\MES\202507260359108_InitMES2.resx">
-      <DependentUpon>202507260359108_InitMES2.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

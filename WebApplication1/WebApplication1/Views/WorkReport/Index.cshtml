@@ -64,12 +64,16 @@
 
     <!-- 操作按鈕區 -->
     <div class="container-fluid bg-white py-3 px-3 rounded-3 shadow-sm my-3 sticky-top" style="top: 0; z-index: 9;">
-        <div class="d-flex justify-content-center gap-3">
-            <button class="btn btn-primary flex-grow-1 fw-bold px-2" id="btnStartLogOn">開始作業</button>
-            <button class="btn btn-secondary flex-grow-1 fw-bold px-2" disabled>工序退回</button>
-            <button class="btn btn-info flex-grow-1 fw-bold px-2" disabled>更新數量</button>
-            <button class="btn btn-outline-danger flex-grow-1 fw-bold px-2" disabled>取消修改</button>
-            <button class="btn btn-success flex-grow-1 fw-bold px-2" disabled>結束作業</button>
+        <div class="d-flex justify-content-center flex-wrap gap-3">
+            <button class="btn btn-primary fw-bold px-4" id="btnStartLogOn">開始作業</button>
+
+            @* 下面按鈕如不需使用，可直接註解 *@
+            @*
+                 <button class="btn btn-secondary fw-bold px-4" disabled>工序退回</button>
+                <button class="btn btn-info fw-bold px-4" disabled>更新數量</button>
+                <button class="btn btn-outline-danger fw-bold px-4" disabled>取消修改</button>
+                <button class="btn btn-success fw-bold px-4" disabled>結束作業</button>
+            *@
         </div>
     </div>
 
@@ -100,29 +104,35 @@
     </div>
 </main>
 
+<div id="editModalContainer"></div>
+
 
 @section Scripts {
     <script>
 
         function getLogOns() {
-            var processId = $('#processId').val(); // 假設你有隱藏欄位存工序ID
+            var processId = $('#processId').val();
             $.get('/LogOn/GetLogOnList', { processId: processId }, function (html) {
                 $('#logOnTableBody').html(html);
+                bindLogOnEvents();
             });
+
         }
 
         function appendValue(val) {
             document.getElementById('inputBox').value += val;
-            checkQuantity();
+            let qty = parseFloat($('#inputBox').val()) || 0;
+            let workOrderBarcode = $('#Barcode').val(); // 從工單條碼欄位取值
+            checkQuantity(qty, workOrderBarcode);
         }
         function clearInput() {
             document.getElementById('inputBox').value = '';
         }
 
         // 呼叫後端 API 檢查數量
-        function checkQuantity() {
-            let qty = parseFloat($('#inputBox').val()) || 0;
-            let workOrderBarcode = $('#Barcode').val(); // 從工單條碼欄位取值
+        function checkQuantity(qty, workOrderBarcode) {
+            if (!workOrderBarcode || qty <= 0) return;
+            
 
             if (!workOrderBarcode || qty <= 0) {
                 return; // 沒有工單或數量時不檢查
@@ -231,4 +241,8 @@
     });
 
     </script>
+    <script src="~/Scripts/JS/_EditLogOnModal.js"></script>
+    <script src="~/Scripts/JS/_LogOnTableRows.js"></script>
+
+
 }

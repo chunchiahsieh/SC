@@ -9,6 +9,7 @@ namespace WebApplication1.Controllers
     public class InstructionController : Controller
     {
         private readonly ERP_DbContext _erp = new ERP_DbContext();
+        private readonly MES_DbContext _mes = new MES_DbContext();
 
         // GET: Instruction
         public ActionResult Index()

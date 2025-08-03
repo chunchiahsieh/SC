@@ -15,12 +15,29 @@ namespace WebApplication1.Controllers
         public ActionResult GetLogOnList(int processId)
         {
             var logs = _mes.LogOn
+                .Where(l => l.Status == Enum.LogOnStatus.LogOn)
                 .Where(l => l.ProcessId == processId)
                 .OrderByDescending(l => l.StartTime)
                 .ToList();
 
             return PartialView("~/Views/WorkReport/_LogOnTableRows.cshtml", logs);
+        }
 
+
+        private void SaveLogOnHistory(LogOn log, string action, string userBarcode)
+        {
+            var snapshot = Newtonsoft.Json.JsonConvert.SerializeObject(log);
+
+            _mes.LogOnHistories.Add(new LogOnHistory
+            {
+                LogOnId = log.Id,
+                ActionType = action,
+                UserBarcode = userBarcode,
+                ActionTime = DateTime.Now,
+                DataSnapshot = snapshot
+            });
+
+            _mes.SaveChanges();
         }
 
 
@@ -29,9 +46,11 @@ namespace WebApplication1.Controllers
         /// 檢查工單數量是否超過最大可作業數量
         /// </summary>
         /// <param name="workOrderBarcode">工單條碼</param>
-        /// <param name="inputQty">要新增的數量</param>
+        /// <param name="inputQty">要新增或更新的數量</param>
+        /// <param name="excludedLogOnId">（可選）編輯時要排除的 LogOn.Id</param>
         /// <returns>Tuple (success, message, exceed, current, max, remain)</returns>
-        private (bool success, string message, bool exceed, decimal current, decimal max, decimal remain) CheckWorkOrderQty(string workOrderBarcode, decimal inputQty)
+        private (bool success, string message, bool exceed, decimal current, decimal max, decimal remain)
+            CheckWorkOrderQty(string workOrderBarcode, decimal inputQty, int? excludedLogOnId = null)
         {
             var wo = _erp.WOes.FirstOrDefault(w => w.WorkOrderBarcode == workOrderBarcode);
             if (wo == null)
@@ -39,15 +58,23 @@ namespace WebApplication1.Controllers
                 return (false, "找不到對應的工單。", false, 0, 0, 0);
             }
 
-            var logOnQty = _mes.LogOn
-                .Where(l => l.WorkOrderBarcode == workOrderBarcode && l.Status != LogOnStatus.Cancel)
-                .Sum(l => (decimal?)l.Qty) ?? 0;
+            var query = _mes.LogOn
+                .Where(l => l.WorkOrderBarcode == workOrderBarcode &&
+                            (l.Status == LogOnStatus.LogOn || l.Status == LogOnStatus.LogOff));
+
+            if (excludedLogOnId.HasValue)
+            {
+                query = query.Where(l => l.Id != excludedLogOnId.Value);
+            }
+
+            var logOnQty = query.Sum(l => (decimal?)l.Qty) ?? 0;
 
             bool exceed = (logOnQty + inputQty) > wo.MaxQuantity;
             decimal remain = wo.MaxQuantity - logOnQty;
 
             return (true, "", exceed, logOnQty, wo.MaxQuantity, remain);
         }
+
 
         [HttpGet]
         public JsonResult CheckQuantity(string workOrderBarcode, decimal qty)
@@ -244,5 +271,152 @@ namespace WebApplication1.Controllers
             });
         }
 
+        [HttpPost]
+        public ActionResult AcknowledgeSOPRead(int id, string userBarcode)
+        {
+            var log = _mes.LogOn.Find(id);
+            if (log == null)
+                return Json(new { success = false, message = "資料不存在。" });
+
+            if (log.IsReaded == true)
+                return Json(new { success = true, message = "已閱讀生產指示。" });
+
+            var user = _erp.Users.Where(x => x.WorkId == userBarcode).FirstOrDefault();
+            if (user == null)
+                return Json(new { success = false, message = "操作者不存在。" });
+
+            //生產指示區
+            log.IsReaded = true;
+            log.ReadTime = DateTime.Now;
+            log.ReadUserWorkId = user.WorkId;
+            log.ReadUserName = user.Name;
+
+            SaveLogOnHistory(log, Enum.LogOnStatus.AcknowledgeSOPRead, userBarcode);
+            _mes.SaveChanges();
+            return Json(new { success = true, message = "已閱讀生產指示。" });
+        }
+
+
+        [HttpPost]
+        public ActionResult Cancel(int id, string userBarcode)
+        {
+            var log = _mes.LogOn.Find(id);
+            if (log == null)
+                return Json(new { success = false, message = "資料不存在。" });
+
+            var user = _erp.Users.Where(x => x.WorkId == userBarcode).FirstOrDefault();
+            if (user == null)
+                return Json(new { success = false, message = "操作者不存在。" });
+
+            log.Status = Enum.LogOnStatus.LogOff;
+
+            SaveLogOnHistory(log, Enum.LogOnStatus.Cancel, userBarcode);
+
+            _mes.SaveChanges();
+
+            return Json(new { success = true, message = "已取消作業紀錄。" });
+        }
+
+       
+        [HttpPost]
+        public ActionResult Finish(int id, string userBarcode)
+        {
+            var log = _mes.LogOn.Find(id);
+            if (log == null)
+                return Json(new { success = false, message = "資料不存在。" });
+
+            if (log.IsReaded == false)
+                return Json(new { success = false, message = "請先閱讀生產指示。" });
+
+            var user = _erp.Users.Where(x => x.WorkId == userBarcode).FirstOrDefault();
+            if (user == null)
+                return Json(new { success = false, message = "操作者不存在。" });
+
+            log.Status = Enum.LogOnStatus.LogOff;
+
+            // ✅ 儲存快照
+            SaveLogOnHistory(log, Enum.LogOnStatus.LogOn, userBarcode);
+
+            _mes.SaveChanges();
+
+            return Json(new { success = true, message = "作業完成！" });
+        }
+
+        [HttpPost]
+        public ActionResult Edit(int id, string userBarcode)
+        {
+            var logon = _mes.LogOn.Find(id);
+            if (logon == null)
+                return Json(new { success = false, message = "資料不存在。" });
+
+            var user = _erp.Users.Where(x => x.WorkId == userBarcode).FirstOrDefault();
+            if (user == null)
+                return Json(new { success = false, message = "操作者不存在。" });
+
+            return Json(new
+            {
+                success = true,
+                data = logon
+            });
+        }
+
+
+        [HttpGet]
+        public ActionResult EditPartialView(int id)
+        {
+            var logon = _mes.LogOn.Find(id);
+            if (logon == null)
+                return HttpNotFound("找不到要編輯的資料");
+
+            var wo = _erp.WOes.FirstOrDefault(w => w.WorkOrderBarcode == logon.WorkOrderBarcode);
+            var response = new WebApplication1.DTOs.EditLogon();
+            response.Id = id;
+            response.wo = wo;
+            response.logon = logon;
+            return PartialView("~/Views/WorkReport/_EditLogOnModal.cshtml", response);
+        }
+
+        [HttpPost]
+        public ActionResult SaveEdit(LogOn model, string userBarcode)
+        {
+            var logon = _mes.LogOn.Find(model.Id);
+            if (logon == null)
+                return Json(new { success = false, message = "資料不存在" });
+
+            var user = _erp.Users.FirstOrDefault(u => u.WorkId == userBarcode);
+            if (user == null)
+                return Json(new { success = false, message = "操作者不存在" });
+
+            if (user == null)
+                return Json(new { success = false, message = "操作者不存在" });
+
+
+            var check = CheckWorkOrderQty(logon.WorkOrderBarcode, model.Qty, logon.Id); 
+            if (!check.success)
+                return Json(new { success = false, message = check.message });
+
+            if (check.exceed)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = $"作業數量超過最大可作業數量 ({check.max})，目前已登錄 {check.current}，可用數量 {check.remain}。"
+                });
+            }
+
+            // ✅ 更新欄位
+            logon.Qty = model.Qty;
+            logon.ProductionStyle = model.ProductionStyle;
+
+            // ✅ 紀錄歷史
+            SaveLogOnHistory(logon, Enum.LogOnStatus.Edit, userBarcode);
+
+            _mes.SaveChanges();
+
+            return Json(new { success = true });
+        }
+
+
     }
+
 }
