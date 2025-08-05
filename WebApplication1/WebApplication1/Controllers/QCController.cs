@@ -111,8 +111,10 @@ namespace WebApplication1.Controllers
             return Json(new { success = true, qcId = newQcId });
         }
 
-        public ActionResult QCViewMain(int id)
+        public ActionResult QCViewMain(int? id)
         {
+            if(id == null)
+                return HttpNotFound();
             var qc = _mes.QC
               //  .Include(q => q.DefectReasons) 
                 .FirstOrDefault(q => q.Id == id);

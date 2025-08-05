@@ -162,7 +162,39 @@
 
 
       $(function () {
-         getLogOns();
+          getLogOns();
+
+          let barcode = '';
+          let reading = false;
+
+          $(document).on('keypress', function (e) {
+              // 忽略 Enter（避免條碼結尾多一個 \n）
+              if (e.which === 13) return;
+
+              if (!reading) {
+                  reading = true;
+                  barcode = '';
+                  setTimeout(() => {
+                      reading = false;
+
+                      const trimmed = barcode.trim();
+                      if (trimmed.startsWith('W')) {
+                          $('#Barcode').val(trimmed);
+                          $('#Barcode').val(trimmed).trigger('change');
+                          console.log('填入 Barcode:', trimmed);
+                      } else if (/^\d+$/.test(trimmed)) {
+                          $('#userBarcode').val(trimmed);
+                          $('#userBarcode').val(trimmed).trigger('change');
+                          console.log('填入 userBarcode:', trimmed);
+                      } else {
+                          console.warn('條碼格式不符:', trimmed);
+                      }
+
+                  }, 1000); // 偵測條碼輸入結束（1000ms）
+              }
+
+              barcode += String.fromCharCode(e.which);
+          });
 
         // 當選擇首件時，Qty 自動變成 1；選擇正式生產則清空
         $('input[name="ProductionStyle"]').on('change', function () {
